@@ -1,0 +1,2135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>漢字バトル - 煌めく知のカードゲーム & テスト</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3f6fa;
+  --panel: #ffffff;
+  --border: #d1d9e6;
+  --gold: #f59e0b;
+  --gold-dark: #d97706;
+  --blue: #3b8ef3;
+  --blue2: #2563eb;
+  --blue-bg: rgba(59, 142, 243, 0.1);
+  --pink: #f472b6;
+  --pink2: #db2777;
+  --pink-bg: rgba(244, 114, 182, 0.1);
+  --green: #10b981;
+  --green-dark: #059669;
+  --red: #ef4444;
+  --text: #1e293b;
+  --muted: #64748b;
+  --muted2: #94a3b8;
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+*, *::before, *::after {
+  box-sizing: border-box; margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 142, 243, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(244, 114, 182, 0.06) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(245, 158, 11, 0.04) 0px, transparent 50%);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh; overflow-x: hidden; position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(59, 142, 243, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 142, 243, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px; pointer-events: none; z-index: 0;
+}
+.screen { position: relative; z-index: 1; display: none; min-height: 100vh; width: 100%; }
+.screen.active { display: flex; }
+ruby { ruby-position: over; }
+ruby rt {
+  font-family: 'Noto Sans JP', sans-serif; font-size: 0.45em; font-weight: bold;
+  letter-spacing: 0.5px; color: var(--muted); padding-bottom: 1px;
+}
+
+/* ===== TITLE ===== */
+#screen-title { align-items: center; justify-content: center; padding: 24px; }
+.title-box { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 440px; width: 100%; }
+.title-cards { font-size: 90px; margin-bottom: 8px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.1)); }
+.title-main {
+  font-family: 'Dela Gothic One', cursive; font-size: 48px; letter-spacing: 2px; line-height: 1.2; margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--pink2) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 6px rgba(245, 158, 11, 0.2));
+}
+.title-sub { font-size: 12px; font-weight: 900; letter-spacing: 6px; color: var(--muted); text-transform: uppercase; margin-bottom: 40px; }
+.title-deco { display: flex; gap: 16px; margin-bottom: 44px; }
+.title-deco-card {
+  width: 64px; height: 88px; border-radius: 16px; border: 2px solid;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: 'Dela Gothic One', cursive; font-size: 28px;
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08); background: rgba(255, 255, 255, 0.85);
+  position: relative; overflow: hidden;
+}
+.title-deco-card::before {
+  content: ''; position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), transparent 70%); transform: rotate(15deg);
+}
+.title-deco-card:nth-child(1) { border-color: rgba(16,185,129,0.4); color: var(--green); box-shadow: 0 6px 15px rgba(16,185,129,0.1); transform: rotate(-3deg); }
+.title-deco-card:nth-child(2) { border-color: rgba(239,68,68,0.4); color: var(--red); box-shadow: 0 6px 15px rgba(239,68,68,0.1); transform: translateY(-4px) rotate(1deg); }
+.title-deco-card:nth-child(3) { border-color: rgba(59,142,243,0.4); color: var(--blue); box-shadow: 0 6px 15px rgba(59,142,243,0.1); transform: translateY(-2px) rotate(-1.5deg); }
+.title-deco-card:nth-child(4) { border-color: rgba(245,158,11,0.4); color: var(--gold); box-shadow: 0 6px 15px rgba(245,158,11,0.1); transform: translateY(2px) rotate(3deg); }
+.title-start-btn {
+  padding: 18px 56px; border-radius: 30px; border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #fff;
+  font-family: 'Dela Gothic One', cursive; font-size: 24px; letter-spacing: 4px;
+  cursor: pointer; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 24px;
+}
+.title-start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(245,158,11,0.45); }
+.title-start-btn:active { transform: scale(0.96); }
+.title-hint { font-size: 12px; color: var(--muted); font-weight: bold; }
+
+/* ===== SETUP ===== */
+#screen-setup { align-items: center; justify-content: center; padding: 20px; }
+.setup-box {
+  background: var(--panel); border: 1px solid #fff; border-radius: 32px;
+  padding: 32px 24px; max-width: 480px; width: 100%; box-shadow: var(--shadow-lg);
+}
+.setup-logo { font-family: 'Dela Gothic One', cursive; font-size: 22px; text-align: center; color: var(--text); letter-spacing: 2px; margin-bottom: 24px; }
+.s-label { font-size: 11px; font-weight: 900; letter-spacing: 1px; color: var(--muted); display: block; margin-bottom: 8px; }
+.grade-row, .mode-row { display: grid; gap: 8px; margin-bottom: 16px; }
+.grade-row { grid-template-columns: repeat(5, 1fr); } /* 2年〜6年 */
+.mode-row { grid-template-columns: 1fr 1fr; }
+.mode-row.players { grid-template-columns: 1fr 1fr; }
+.g-btn, .mode-btn {
+  padding: 12px 4px; border-radius: 14px; border: 2px solid var(--border); background: #fff;
+  color: var(--muted); font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 13px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.g-btn:hover, .mode-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+.g-btn.on, .mode-btn.on { background: rgba(245,158,11,0.08); border-color: var(--gold); color: var(--gold-dark); box-shadow: 0 3px 8px rgba(245,158,11,0.1); }
+.name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.name-grid.single-player { grid-template-columns: 1fr; }
+.n-wrap { display: flex; flex-direction: column; gap: 6px; }
+.n-badge { display: inline-block; padding: 4px 12px; border-radius: 10px; font-family: 'Dela Gothic One', cursive; font-size: 12px; }
+.n-badge.a { background: var(--blue-bg); color: var(--blue2); }
+.n-badge.b { background: var(--pink-bg); color: var(--pink2); }
+.n-input {
+  width: 100%; background: #f8fafc; border: 2px solid var(--border); border-radius: 14px;
+  padding: 14px; color: var(--text); font-family: 'Noto Sans JP', sans-serif;
+  font-weight: bold; font-size: 14px; outline: none; transition: all 0.2s;
+}
+.n-input.a:focus { border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(59, 142, 243, 0.1); }
+.n-input.b:focus { border-color: var(--pink); background: #fff; box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.1); }
+.hp-area { margin-bottom: 16px; background: #f8fafc; padding: 16px; border-radius: 20px; border: 1px solid var(--border); }
+.hp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.hp-mode-badge {
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 11px;
+  padding: 4px 12px; border-radius: 20px; color: #fff; background: var(--blue);
+  box-shadow: 0 3px 8px rgba(59, 142, 243, 0.15); transition: all 0.2s;
+}
+.hp-mode-badge.quick { background: var(--green); box-shadow: 0 3px 8px rgba(16, 185, 129, 0.15); }
+.hp-mode-badge.standard { background: var(--blue); box-shadow: 0 3px 8px rgba(59, 142, 243, 0.15); }
+.hp-mode-badge.endless { background: #8b5cf6; box-shadow: 0 3px 8px rgba(139, 92, 246, 0.15); }
+.hp-val { font-family: 'Dela Gothic One', cursive; font-size: 30px; color: var(--text); line-height: 1; }
+.hp-slider-wrap { position: relative; padding: 8px 0; }
+.hp-marks { display: grid; grid-template-columns: repeat(10, 1fr); text-align: center; margin-top: 8px; }
+.hp-marks.q-marks { grid-template-columns: repeat(5, 1fr); }
+.hp-mark-item { font-size: 11px; font-weight: 700; color: var(--muted2); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hp-mark-item::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+.hp-mark-item.active { color: var(--gold-dark); }
+.hp-mark-item.active::before { background: var(--gold); }
+.rule-panel {
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 18px;
+  padding: 16px; font-size: 13px; line-height: 2.1; color: var(--text);
+  margin-bottom: 20px; font-weight: bold;
+}
+.rule-panel b { color: var(--blue2); }
+.rule-panel .dmg-txt { color: var(--red); }
+.setup-btns { display: flex; gap: 12px; }
+.start-btn {
+  flex: 1; padding: 18px; border-radius: 20px; border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: white;
+  font-family: 'Dela Gothic One', cursive; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25); transition: transform 0.15s;
+}
+.start-btn:active { transform: scale(0.96); }
+.back-btn {
+  padding: 18px 24px; border-radius: 20px; border: 2px solid var(--border);
+  background: transparent; color: var(--muted); font-family: 'Dela Gothic One', cursive;
+  font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.back-btn:hover { background: #f8fafc; color: var(--text); }
+
+/* ===== GAME ===== */
+#screen-game { flex-direction: column; padding: 16px 12px; gap: 12px; }
+.shake-screen { animation: shakeEffect 0.5s ease-in-out; }
+@keyframes shakeEffect {
+  0%,100%{transform:translate(0,0)} 10%,30%,50%,70%,90%{transform:translate(-6px,3px)} 20%,40%,60%,80%{transform:translate(6px,-3px)}
+}
+.game-inner { max-width: 540px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.g-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.turn-pill {
+  font-family: 'Dela Gothic One', cursive; font-size: 13px; letter-spacing: 1px;
+  padding: 8px 18px; border-radius: 30px; box-shadow: var(--shadow-sm); background: #fff; border: 2px solid;
+}
+.turn-pill.a { color: var(--blue2); border-color: var(--blue); }
+.turn-pill.b { color: var(--pink2); border-color: var(--pink); }
+.turn-pill.single { color: var(--gold-dark); border-color: var(--gold); }
+.t-count { font-size: 13px; font-weight: 900; color: var(--muted); }
+.cfg-btn { padding: 8px 16px; border-radius: 12px; border: 2px solid var(--border); background: #fff; color: var(--muted); font-size: 12px; cursor: pointer; font-weight: bold; }
+.hp-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+.hp-row.single-player { grid-template-columns: 1fr; }
+.hp-card { background: var(--panel); border: 2px solid var(--border); border-radius: 20px; padding: 14px; box-shadow: var(--shadow-sm); transition: all 0.3s; }
+.hp-card.a { border-color: rgba(59, 142, 243, 0.3); }
+.hp-card.b { border-color: rgba(244, 114, 182, 0.3); }
+.hp-card.single { border-color: rgba(245, 158, 11, 0.3); }
+.hp-card.danger { animation: dangerPulse 0.8s ease-in-out infinite; }
+@keyframes dangerPulse {
+  0%,100%{box-shadow:0 0 0 rgba(239, 68, 68, 0);border-color:rgba(239, 68, 68, 0.3)}
+  50%{box-shadow:0 0 20px rgba(239, 68, 68, 0.4);border-color:var(--red)}
+}
+.hc-name { font-size: 12px; font-weight: 900; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-num { font-family: 'Dela Gothic One', cursive; font-size: 28px; line-height: 1.1; }
+.hc-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+.hc-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.vs-txt { font-family: 'Dela Gothic One', cursive; font-size: 20px; color: var(--muted); }
+.arena {
+  background: var(--panel); border: 2px solid var(--border); border-radius: 28px;
+  padding: 28px 20px; min-height: 450px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; box-shadow: var(--shadow-md); position: relative;
+}
+.arena-label { font-size: 11px; font-weight: 900; letter-spacing: 4px; color: var(--muted2); text-transform: uppercase; }
+.draw-3d-wrap { width: 150px; height: 200px; perspective: 1000px; cursor: pointer; will-change: transform; }
+.draw-card-btn {
+  width: 100%; height: 100%; border-radius: 20px; position: relative; transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); background: none; border: none; will-change: transform;
+}
+.draw-card-btn.flipped { transform: rotateY(180deg); }
+.draw-card-front, .draw-card-back {
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md); border: 3px solid #fff;
+}
+.draw-card-front {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); position: relative; overflow: hidden;
+}
+.draw-card-front::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.8) 50%, transparent 60%);
+  background-size: 200% 200%; animation: shineCard 3s infinite linear;
+}
+@keyframes shineCard { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.draw-card-front.a { border-color: var(--blue); }
+.draw-card-front.b { border-color: var(--pink); }
+.draw-card-front.single { border-color: var(--gold); }
+.draw-card-back { transform: rotateY(180deg); background: #fff; border-color: var(--gold); }
+.draw-back-icon { font-size: 56px; margin-bottom: 8px; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)); }
+.draw-text { font-family: 'Dela Gothic One', cursive; font-size: 14px; letter-spacing: 2px; color: var(--muted); }
+.card-type-badge {
+  font-family: 'Dela Gothic One', cursive; font-size: 12px; color: #fff;
+  background: linear-gradient(90deg, var(--gold-dark), var(--pink2));
+  padding: 6px 14px; border-radius: 12px; box-shadow: var(--shadow-sm); z-index: 10;
+}
+.choose-msg {
+  font-size: 15px; font-weight: bold; color: var(--text); text-align: center; line-height: 1.8;
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; width: 100%;
+}
+.choose-msg span { color: var(--gold-dark); font-size: 13px; display: block; margin-top: 6px; }
+.type-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.type-btn {
+  padding: 24px 20px; border-radius: 20px; border: 3px solid; background: #fff;
+  cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 16px; box-shadow: var(--shadow-sm);
+}
+.type-btn:active { transform: scale(0.97); }
+.type-btn.read { border-color: rgba(59, 142, 243, 0.3); color: var(--blue2); }
+.type-btn.read:hover { background: var(--blue-bg); border-color: var(--blue); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.type-btn.write { border-color: rgba(245, 158, 11, 0.3); color: var(--gold-dark); }
+.type-btn.write:hover { background: rgba(245, 158, 11, 0.1); border-color: var(--gold); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.tb-icon { font-size: 40px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); }
+.tb-text-group { display: flex; flex-direction: column; align-items: flex-start; }
+.tb-name { font-family: 'Dela Gothic One', cursive; font-size: 24px; line-height: 1.2; }
+.tb-dmg { font-size: 13px; font-weight: bold; opacity: 0.9; margin-top: 4px; }
+.sentence-panel {
+  background: #f8fafc; border: 2px solid var(--border); border-radius: 16px;
+  padding: 16px 20px; font-size: 16px; line-height: 1.8; color: var(--text); text-align: center; width: 100%; font-weight: bold;
+}
+.sentence-panel .q-word { color: var(--gold-dark); font-family: 'Dela Gothic One', cursive; font-size: 22px; border-bottom: 3px dashed var(--gold); padding: 0 4px; margin: 0 4px; }
+.word-meaning-box {
+  width: 100%; background: rgba(245, 158, 11, 0.08); border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 16px; padding: 14px 18px; font-size: 15px; line-height: 2.2; color: var(--text); text-align: center; font-weight: bold;
+}
+.meaning-title-mini { font-size: 11px; color: var(--gold-dark); letter-spacing: 1px; display: block; margin-bottom: 6px; text-transform: uppercase; }
+.read-q { font-size: 15px; font-weight: bold; color: var(--muted); text-align: center; }
+.read-kanji-display {
+  font-family: 'Dela Gothic One', cursive; font-size: 80px; line-height: 1.2; color: var(--text);
+  text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1); animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; margin: 12px 0;
+}
+@keyframes scaleIn { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+.read-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.read-opt {
+  padding: 18px 10px; border-radius: 16px; border: 2px solid var(--border); background: #fff;
+  color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 20px; font-weight: 900;
+  text-align: center; cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow-sm);
+}
+.read-opt:not(:disabled):hover { border-color: var(--blue2); background: var(--blue-bg); transform: translateY(-2px); }
+.read-opt.ok { border-color: var(--green)!important; background: rgba(16, 185, 129, 0.1)!important; color: var(--green)!important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+.read-opt.ng { border-color: var(--red)!important; background: rgba(239, 68, 68, 0.08)!important; color: var(--red)!important; }
+.cvs-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.cvs-prompt { text-align: center; line-height: 1.8; font-size: 14px; color: var(--muted); font-weight: bold; }
+.reading-big { display: block; font-family: 'Dela Gothic One', cursive; font-size: 38px; color: var(--gold-dark); margin-top: 4px; }
+#draw-canvas {
+  border: 3px solid var(--gold); border-radius: 24px; background: #fdfdfd;
+  cursor: crosshair; touch-action: none;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05), var(--shadow-md); display: block;
+}
+.cvs-btns { display: flex; gap: 12px; width: 100%; max-width: 260px; }
+.btn-erase {
+  flex: 1; padding: 12px; border-radius: 14px; border: 2px solid var(--border); background: #fff; color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; cursor: pointer; transition: all 0.2s;
+}
+.btn-erase:hover { border-color: var(--red); color: var(--red); background: #fff5f5; }
+.btn-done {
+  flex: 1.2; padding: 12px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, var(--blue2), #3b82f6); color: white;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 16px; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); transition: all 0.2s;
+}
+.btn-done:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+.hint-zone { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.hint-remain { font-size: 12px; font-weight: bold; color: var(--muted); }
+.hint-remain span { color: var(--gold-dark); font-weight: 900; font-size: 16px; margin: 0 4px; }
+.hint-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.hint-btn {
+  padding: 10px 16px; border-radius: 12px; border: 2px dashed var(--gold); background: #fff; color: var(--gold-dark);
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.hint-btn:disabled { opacity: 0.3; cursor: not-allowed; border-style: solid; background: #f1f5f9; }
+.hint-box {
+  background: #fff; border: 2px solid var(--gold); border-radius: 16px; padding: 14px 20px;
+  font-size: 14px; color: var(--text); text-align: center; line-height: 1.8; width: 100%;
+  font-weight: bold; box-shadow: var(--shadow-sm); animation: fadeIn 0.2s ease;
+}
+.hint-title { font-size: 10px; color: var(--gold-dark); letter-spacing: 1px; display: block; margin-bottom: 4px; text-transform: uppercase; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== AI LOADER & AI JUDGE ===== */
+.ai-eval-panel {
+  display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; text-align: center;
+}
+.ai-loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 40px 20px;
+}
+.ai-spinner {
+  width: 70px; height: 70px; border: 5px solid rgba(59, 142, 243, 0.1); border-top: 5px solid var(--blue);
+  border-radius: 50%; animation: spin 1s linear infinite; position: relative;
+}
+.ai-spinner::after {
+  content: ''; position: absolute; inset: 6px; border: 5px solid rgba(245, 158, 11, 0.1);
+  border-bottom: 5px solid var(--gold); border-radius: 50%; animation: spin 1.5s linear infinite reverse;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.ai-eval-title {
+  font-family: 'Dela Gothic One', cursive; font-size: 18px; color: var(--blue2); margin-top: 8px;
+}
+.ai-verdict-box {
+  background: #fff; border: 3px solid var(--border); border-radius: 24px; padding: 24px; width: 100%;
+  box-shadow: var(--shadow-md); transition: border-color 0.3s;
+}
+.ai-verdict-box.correct { border-color: var(--green); background: rgba(16, 185, 129, 0.03); }
+.ai-verdict-box.incorrect { border-color: var(--red); background: rgba(239, 68, 68, 0.03); }
+.ai-verdict-badge {
+  display: inline-block; padding: 6px 20px; border-radius: 20px; font-family: 'Dela Gothic One', cursive;
+  font-size: 16px; color: white; margin-bottom: 12px;
+}
+.ai-verdict-badge.correct { background: var(--green); }
+.ai-verdict-badge.incorrect { background: var(--red); }
+.ai-feedback-txt {
+  font-size: 15px; line-height: 1.8; color: var(--text); font-weight: bold; margin-bottom: 16px;
+}
+.ai-bottom-msg {
+  font-size: 11px; color: var(--muted); margin-bottom: 16px; display: block;
+}
+
+.judge-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+.judge-title { font-size: 14px; font-weight: bold; color: var(--blue2); text-align: center; }
+.judge-kanji { font-family: 'Dela Gothic One', cursive; font-size: 110px; line-height: 1; color: var(--text); }
+.judge-read { font-size: 16px; font-weight: bold; color: var(--muted); }
+.judge-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+.j-ok {
+  padding: 18px 12px; border-radius: 18px; border: 2px solid var(--green); background: #fff; color: var(--green);
+  font-weight: 900; font-size: 16px; cursor: pointer; transition: all 0.2s; line-height: 1.6; box-shadow: var(--shadow-sm);
+}
+.j-ok:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05); }
+.j-ng {
+  padding: 18px 12px; border-radius: 18px; border: 2px solid var(--border); background: #fff; color: var(--muted);
+  font-weight: 900; font-size: 16px; cursor: pointer; transition: all 0.2s; line-height: 1.6;
+}
+.j-ng:hover { background: #f8fafc; border-color: var(--red); color: var(--red); }
+.end-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+.end-msg {
+  font-family: 'Dela Gothic One', cursive; font-size: 24px; text-align: center; padding: 20px;
+  border-radius: 20px; width: 100%; line-height: 1.6; box-shadow: var(--shadow-md); background: #fff;
+}
+.end-msg.hit { color: var(--gold-dark); border: 2px solid var(--gold); }
+.end-msg.miss { color: var(--muted); border: 2px solid var(--border); }
+.end-learn {
+  font-size: 14px; color: var(--text); text-align: center; line-height: 2.4; font-weight: bold;
+  background: #f8fafc; padding: 16px; border-radius: 16px; width: 100%;
+}
+.end-learn .hl { color: var(--blue2); font-size: 20px; font-family: 'Dela Gothic One', cursive; margin: 0 4px; }
+.next-btn {
+  padding: 18px 48px; border-radius: 20px; border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: white;
+  font-family: 'Dela Gothic One', cursive; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+}
+.next-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); }
+.dmg-popup {
+  position: fixed; top: 40%; left: 50%; transform: translate(-50%,-50%);
+  font-family: 'Dela Gothic One', cursive; font-size: 84px; pointer-events: none; z-index: 9999;
+  animation: dmgA 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+}
+@keyframes dmgA {
+  0%{opacity:0;transform:translate(-50%,-30%) scale(0.4)}
+  30%{opacity:1;transform:translate(-50%,-55%) scale(1.2)}
+  50%{transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-100%) scale(0.8)}
+}
+.danger-flash { animation: screenFlash 1.4s ease-in-out infinite; }
+@keyframes screenFlash { 0%,100%{background:var(--bg)} 50%{background:#ffe4e6} }
+#screen-result { flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 32px; text-align: center; }
+.trophy { font-size: 120px; animation: trophyFloat 2.5s ease-in-out infinite; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
+@keyframes trophyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+.winner-txt {
+  font-family: 'Dela Gothic One', cursive; font-size: 46px; letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--pink2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.res-info { font-size: 16px; font-weight: 900; color: var(--text); line-height: 2; background: #fff; padding: 20px; border-radius: 20px; box-shadow: var(--shadow-sm); width: 100%; max-width: 480px; }
+.res-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.r-again { padding: 18px 36px; border-radius: 20px; border: none; background: linear-gradient(135deg, var(--blue), var(--blue2)); color: white; font-family: 'Dela Gothic One', cursive; font-size: 18px; cursor: pointer; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3); transition: all 0.2s; }
+.r-again:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); }
+.r-back { padding: 18px 36px; border-radius: 20px; border: 2px solid var(--border); background: #fff; color: var(--muted); font-family: 'Dela Gothic One', cursive; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+.r-back:hover { border-color: var(--muted); color: var(--text); background: #f8fafc; }
+input[type=range] { width: 100%; accent-color: var(--gold); cursor: pointer; }
+
+/* テスト一覧表 */
+.test-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 16px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.test-summary-item {
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+}
+.test-summary-item.ok {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+.test-summary-item.ng {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="screen-title" class="screen active">
+  <div class="title-box">
+    <div class="title-cards">🎴</div>
+    <div class="title-main"><ruby>漢字<rt>かんじ</rt></ruby>バトル</div>
+    <div class="title-sub">Kanji Battle Card Game & Tests</div>
+    <div class="title-deco">
+      <div class="title-deco-card"><ruby>木<rt>き</rt></ruby></div>
+      <div class="title-deco-card"><ruby>画<rt>がく</rt></ruby></div>
+      <div class="title-deco-card"><ruby>美<rt>び</rt></ruby></div>
+      <div class="title-deco-card"><ruby>術<rt>じゅつ</rt></ruby></div>
+    </div>
+    <button class="title-start-btn" onclick="goSetupScreen()">は じ め る</button>
+    <div class="title-hint">タップすると音楽が始まります 🎵</div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-box">
+    <div class="setup-logo">🎴 <ruby>漢字<rt>かんじ</rt></ruby>バトル <ruby>設定<rt>せってい</rt></ruby></div>
+    
+    <span class="s-label"><ruby>人数選択<rt>にんずうせんたく</rt></ruby> · Players</span>
+    <div class="mode-row players">
+      <button class="mode-btn on" id="play-single" onclick="selectPlayerMode('single')">1人プレイ</button>
+      <button class="mode-btn" id="play-multi" onclick="selectPlayerMode('multi')">2人プレイ</button>
+    </div>
+
+    <span class="s-label"><ruby>ゲームモード<rt>もーど</rt></ruby> · Game Mode</span>
+    <div class="mode-row">
+      <button class="mode-btn on" id="gamemode-battle" onclick="selectGamePlayMode('battle')">通常バトル</button>
+      <button class="mode-btn" id="gamemode-test" onclick="selectGamePlayMode('test')">実力テスト</button>
+    </div>
+
+    <!-- 2人プレイかつテストの時に表示：どちらのプレイヤーがテストを解くか -->
+    <div id="test-selector-section" style="display:none; margin-bottom: 16px;">
+      <span class="s-label"><ruby>テストに挑戦する人<rt>てすとちょうせんしゃ</rt></ruby> · Test Challenger</span>
+      <div class="mode-row">
+        <button class="mode-btn on" id="test-challenger-a" onclick="selectTestChallenger('a')">プレイヤーA がテスト</button>
+        <button class="mode-btn" id="test-challenger-b" onclick="selectTestChallenger('b')">プレイヤーB がテスト</button>
+      </div>
+    </div>
+
+    <span class="s-label"><ruby>学年<rt>がくねん</rt></ruby> · Grade</span>
+    <div class="grade-row" id="grade-row"></div>
+    
+    <!-- クイズ形式 / テスト形式 -->
+    <span class="s-label" id="format-label"><ruby>テスト形式<rt>けいしき</rt></ruby> · Format</span>
+    <div class="mode-row" id="format-selection-container">
+      <button class="mode-btn on" id="format-both" onclick="selectFormat('both')"><ruby>読書<rt>よみ・かき</rt></ruby></button>
+      <button class="mode-btn" id="format-read" onclick="selectFormat('read')"><ruby>読<rt>よ</rt></ruby>みのみ</button>
+    </div>
+
+    <span class="s-label">プレイヤー<ruby>名<rt>めい</rt></ruby></span>
+    <div class="name-grid" id="setup-name-grid">
+      <div class="n-wrap">
+        <div><span class="n-badge a" id="badge-a">A</span></div>
+        <input class="n-input a" id="input-a" value="プレイヤーA" placeholder="プレイヤーAのなまえ" maxlength="8">
+      </div>
+      <div class="n-wrap" id="wrap-player-b">
+        <div><span class="n-badge b">B</span></div>
+        <input class="n-input b" id="input-b" value="プレイヤーB" placeholder="プレイヤーBのなまえ" maxlength="8">
+      </div>
+    </div>
+    
+    <!-- 設定連動エリア (1人プレイ時：問題数、2人プレイ時：HP) -->
+    <div id="hp-interactive-section">
+      <span class="s-label" id="setup-interactive-label">HP · <ruby>体力<rt>たいりょく</rt></ruby></span>
+      <div class="hp-area">
+        <div class="hp-header">
+          <span class="hp-mode-badge standard" id="hp-badge"><ruby>標準対局<rt>ひょうじゅんたいきょく</rt></ruby></span>
+          <div class="hp-val" id="hp-display">20 HP</div>
+        </div>
+        <div class="hp-slider-wrap">
+          <input type="range" min="10" max="100" step="10" value="20" id="hp-slider" oninput="onHpSliderInput(this.value)">
+        </div>
+        <div class="hp-marks" id="hp-marks-container"></div>
+      </div>
+    </div>
+    
+    <div class="rule-panel" id="rule-desc-panel">
+      🎴 <b><ruby>毎<rt>まい</rt></ruby>ターン１<ruby>枚<rt>まい</rt></ruby>ドロー！クイズに<ruby>挑戦<rt>ちょうせん</rt></ruby>！</b><br>
+      📖 <b>1<ruby>文字<rt>もじ</rt></ruby>の「<ruby>読<rt>よ</rt></ruby>み」</b> → <span class="dmg-txt">-2 ダメージ</span><br>
+      ✏️ <b>1<ruby>文字<rt>もじ</rt></ruby>の「<ruby>書<rt>か</rt></ruby>き」</b> → <span class="dmg-txt">-4 ダメージ⚡ (AI判定付!)</span><br>
+      🔥 <b><ruby>二字熟語<rt>にじじゅくご</rt></ruby>の「<ruby>読<rt>よ</rt></ruby>み」</b> → <span class="dmg-txt">-4 ダメージ💥</span><br>
+      ⚡ <b><ruby>二字熟語<rt>にじじゅくご</rt></ruby>の「<ruby>書<rt>か</rt></ruby>き」</b> → <span class="dmg-txt">-8 <ruby>超<rt>ちょう</rt></ruby>ダメージ⚡💥 (AI判定付!)</span><br>
+      💡 <b>ヒントは<ruby>各<rt>かく</rt></ruby>プレイヤー <ruby>毎<rt>まい</rt></ruby> 3<ruby>回<rt>かい</rt></ruby> まで！</b>
+    </div>
+    <div class="setup-btns">
+      <button class="back-btn" onclick="goTitle()">◀ もどる</button>
+      <button class="start-btn" onclick="startGame()">BATTLE START</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="game-inner">
+    <div class="g-header">
+      <div class="turn-pill a" id="turn-pill">🟦 プレイヤーA の<ruby>番<rt>ばん</rt></ruby></div>
+      <div class="t-count" id="turn-count">TURN 1</div>
+      <!-- 中断して設定画面に戻るためのボタン -->
+      <button class="cfg-btn" style="border-color: var(--red); color: var(--red);" onclick="abortAndRetry()">↩やり直す</button>
+    </div>
+    <div class="hp-row" id="game-hp-row">
+      <div class="hp-card a" id="hpcard-a">
+        <div class="hc-name" style="color:var(--blue2)">🟦 <span id="hpname-a">プレイヤーA</span></div>
+        <div class="hc-num" id="hc-num-a"><span id="hp-a">20</span><span style="font-size:14px;color:var(--muted)">/20</span></div>
+        <div class="hc-bar-bg"><div class="hc-bar-fill" id="hpbar-a" style="width:100%;background:var(--green)"></div></div>
+      </div>
+      <div class="vs-txt" id="vs-text">VS</div>
+      <div class="hp-card b" id="hpcard-b">
+        <div class="hc-name" style="color:var(--pink2)">🟧 <span id="hpname-b">プレイヤーB</span></div>
+        <div class="hc-num" id="hc-num-b"><span id="hp-b">20</span><span style="font-size:14px;color:var(--muted)">/20</span></div>
+        <div class="hc-bar-bg"><div class="hc-bar-fill" id="hpbar-b" style="width:100%;background:var(--green)"></div></div>
+      </div>
+    </div>
+    <div class="arena a" id="arena"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="trophy">🏆</div>
+  <div class="winner-txt" id="winner-txt">〇〇 の<ruby>勝利<rt>しょうり</rt></ruby>！</div>
+  <div class="res-info" id="res-info"></div>
+  <div class="res-btns">
+    <button class="r-again" onclick="startGame()">もう１<ruby>回<rt>かい</rt></ruby></button>
+    <button class="r-back" onclick="goSetupScreen()"><ruby>設定<rt>せってい</rt></ruby>へ</button>
+    <button class="r-back" onclick="goTitle()">タイトルへ</button>
+  </div>
+</div>
+
+<script>
+// ===================== BGMエンジン =====================
+const BGM = (function() {
+  const F = {
+    C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196.00,A3:220.00,B3:246.94,
+    C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,
+    C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880.00,B5:987.77,
+    C6:1046.50
+  };
+  let actx=null, nodes=[], timer=null, currentTrack=null;
+
+  function initCtx() {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx && actx.state==='suspended') actx.resume().catch(()=>{});
+    return actx;
+  }
+  function stop() {
+    nodes.forEach(n=>{ try{n.stop&&n.stop();}catch(e){} });
+    nodes=[]; if(timer){clearTimeout(timer);timer=null;} currentTrack=null;
+  }
+  function melody(c,notes,t0,dest) {
+    let t=t0,dur=0;
+    notes.forEach(function(n){
+      let freq=n[0],len=n[1],type=n[2]||'sine',vol=n[3]||0.1;
+      if(freq>0){
+        let osc=c.createOscillator(),g=c.createGain();
+        osc.type=type; osc.frequency.setValueAtTime(freq,t);
+        g.gain.setValueAtTime(0.001,t);
+        g.gain.linearRampToValueAtTime(vol,t+0.1);
+        g.gain.linearRampToValueAtTime(vol*0.8,t+len*0.6);
+        g.gain.exponentialRampToValueAtTime(0.001,t+len);
+        osc.connect(g); g.connect(dest);
+        try{osc.start(t);osc.stop(t+len+0.1);}catch(err){}
+        nodes.push(osc);
+      }
+      t+=len; dur+=len;
+    });
+    return dur;
+  }
+  function chords(c,list,t0,dest,vol) {
+    vol=vol||0.04; let t=t0;
+    list.forEach(function(item){
+      let freqs=item[0],len=item[1];
+      freqs.forEach(function(freq){
+        let osc=c.createOscillator(),g=c.createGain();
+        osc.type='triangle'; osc.frequency.setValueAtTime(freq,t);
+        g.gain.setValueAtTime(0.001,t);
+        g.gain.linearRampToValueAtTime(vol,t+0.15);
+        g.gain.linearRampToValueAtTime(vol*0.6,t+len*0.5);
+        g.gain.exponentialRampToValueAtTime(0.001,t+len);
+        osc.connect(g); g.connect(dest);
+        try{osc.start(t);osc.stop(t+len+0.2);}catch(err){}
+        nodes.push(osc);
+      });
+      t+=len;
+    });
+  }
+  function master(c) {
+    let m=c.createGain();
+    m.gain.setValueAtTime(0.001,c.currentTime);
+    m.gain.linearRampToValueAtTime(1,c.currentTime+1.5);
+    m.connect(c.destination); nodes.push(m); return m;
+  }
+  const tracks = {
+    title: function(c,m) {
+      let mel=[[F.A4,0.75],[F.C5,0.75],[F.E5,1.5],[F.D5,0.75],[F.C5,0.75],[F.B4,1.5],[F.A4,0.75],[F.B4,0.75],[F.C5,1.5],[F.B4,0.75],[F.G4,0.75],[F.A4,3.0]].map(n=>[n[0],n[1],'sine',0.08]);
+      let ch=[[[F.A3,F.E4],1.5],[[F.C4,F.G4],1.5],[[F.G3,F.D4],1.5],[[F.E3,F.B3],1.5],[[F.F3,F.C4],1.5],[[F.G3,F.D4],1.5],[[F.A3,F.E4],3.0]];
+      let total=melody(c,mel,c.currentTime+0.1,m); chords(c,ch,c.currentTime+0.1,m,0.03);
+      timer=setTimeout(()=>{if(currentTrack==='title')play('title');},(total-0.2)*1000);
+    },
+    home: function(c,m) {
+      let mel=[[F.C5,0.5],[F.E5,0.5],[F.G5,1.0],[F.F5,0.5],[F.D5,0.5],[F.E5,1.0],[F.C5,0.5],[F.D5,0.5],[F.E5,1.0],[F.D5,0.5],[F.B4,0.5],[F.C5,2.0]].map(n=>[n[0],n[1],'sine',0.07]);
+      let ch=[[[F.C4,F.G4],1.0],[[F.E4,F.B4],1.0],[[F.F4,F.C5],1.0],[[F.G4,F.D5],1.0],[[F.A4,F.E5],1.0],[[F.F4,F.C5],1.0],[[F.G4,F.D5],1.0],[[F.C4,F.G4],1.0]];
+      let total=melody(c,mel,c.currentTime+0.1,m); chords(c,ch,c.currentTime+0.1,m,0.03);
+      timer=setTimeout(()=>{if(currentTrack==='home')play('home');},(total-0.2)*1000);
+    },
+    battle: function(c,m) {
+      let mel=[[F.A4,0.5],[F.E5,0.5],[F.D5,0.5],[F.C5,0.5],[F.B4,0.5],[F.C5,0.5],[F.D5,1.0],[F.E5,0.5],[F.C5,0.5],[F.A4,0.5],[F.B4,0.5],[F.G4,0.5],[F.B4,0.5],[F.A4,1.0]].map(n=>[n[0],n[1],'sine',0.08]);
+      let ch=[[[F.A3,F.E4],1.0],[[F.F3,F.C4],1.0],[[F.G3,F.D4],1.0],[[F.E3,F.B3],1.0],[[F.A3,F.E4],1.0],[[F.F3,F.C4],1.0],[[F.G3,F.D4],1.0],[[F.A3,F.E4],1.0]];
+      let total=melody(c,mel,c.currentTime+0.1,m); chords(c,ch,c.currentTime+0.1,m,0.035);
+      timer=setTimeout(()=>{if(currentTrack==='battle')play('battle');},(total-0.2)*1000);
+    },
+    tense: function(c,m) {
+      let mel=[[F.E4,1.0],[F.F4,1.0],[F.D4,2.0],[F.E4,1.0],[F.C4,1.0],[F.B3,2.0]].map(n=>[n[0],n[1],'sine',0.08]);
+      let ch=[[[F.A3,F.C4,F.E4],2.0],[[F.G3,F.B3,F.D4],2.0],[[F.F3,F.A3,F.C4],2.0],[[F.E3,F.G3,F.B3],2.0]];
+      let total=melody(c,mel,c.currentTime+0.1,m); chords(c,ch,c.currentTime+0.1,m,0.04);
+      timer=setTimeout(()=>{if(currentTrack==='tense')play('tense');},(total-0.2)*1000);
+    },
+    win: function(c,m) {
+      let mel=[[F.C5,0.25],[F.E5,0.25],[F.G5,0.5],[F.C6,1.0],[F.A5,0.5],[F.G5,0.5],[F.E5,1.0],[F.F5,0.25],[F.A5,0.25],[F.C6,0.5],[F.E5,0.5],[F.D5,0.5],[F.C5,2.0]].map(n=>[n[0],n[1],'sine',0.08]);
+      let ch=[[[F.C4,F.E4,F.G4],2.0],[[F.A3,F.C4,F.E4],2.0],[[F.F3,F.A3,F.C4],2.0],[[F.G3,F.B3,F.D4],2.0]];
+      let total=melody(c,mel,c.currentTime+0.1,m); chords(c,ch,c.currentTime+0.1,m,0.04);
+      timer=setTimeout(()=>{if(currentTrack==='win')play('win');},(total-0.2)*1000);
+    }
+  };
+  function play(name) {
+    try {
+      if(currentTrack===name)return; stop(); currentTrack=name;
+      let c=initCtx(); if(!c)return;
+      let m=master(c); if(tracks[name])tracks[name](c,m);
+    }catch(err){}
+  }
+  function se(type) {
+    try {
+      let c=initCtx(); if(!c)return;
+      let g=c.createGain(); g.connect(c.destination); let t=c.currentTime;
+      if(type==='correct'){
+        [523.25,659.25,1046.50].forEach((freq,idx)=>{
+          let o=c.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(freq,t+idx*0.1);
+          g.gain.setValueAtTime(0.001,t+idx*0.1); g.gain.linearRampToValueAtTime(0.1,t+idx*0.1+0.05); g.gain.exponentialRampToValueAtTime(0.001,t+idx*0.1+0.3);
+          o.connect(g); o.start(t+idx*0.1); o.stop(t+idx*0.1+0.3);
+        });
+      }else if(type==='wrong'){
+        let o=c.createOscillator(); o.type='triangle';
+        o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(130,t+0.4);
+        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.1,t+0.05); g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+        o.connect(g); o.start(t); o.stop(t+0.4);
+      }else if(type==='damage'){
+        let o=c.createOscillator(); o.type='triangle';
+        o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(50,t+0.3);
+        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.15,t+0.05); g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+        o.connect(g); o.start(t); o.stop(t+0.3);
+      }else if(type==='draw'){
+        let o=c.createOscillator(); o.type='sine';
+        o.frequency.setValueAtTime(400,t); o.frequency.exponentialRampToValueAtTime(800,t+0.2);
+        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(0.08,t+0.05); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+        o.connect(g); o.start(t); o.stop(t+0.2);
+      }
+    }catch(err){}
+  }
+  return {play,se,stop,initCtx};
+})();
+
+// ===================== 漢字データベース =====================
+const KANJI_DB = {
+  1:[
+    {k:"山",r:"やま",h:"高くもりあがった地形"},
+    {k:"川",r:"かわ",h:"水が流れるところ"},
+    {k:"木",r:"き",h:"みきと枝と根がある植物"},
+    {k:"火",r:"ひ",h:"もえているもの"},
+    {k:"水",r:"みず",h:"飲んだり使ったりする液体"}
+  ],
+  2:[
+    {k:"答",r:"こたえ",h:"問題や質問に対する返し"},
+    {k:"算",r:"さん",h:"かずを計算すること"},
+    {k:"数",r:"かず",h:"ものの多さをあらわす数字"},
+    {k:"語",r:"ご",h:"気持ちをつたえる言葉"},
+    {k:"話",r:"はなし",h:"声にだして言葉を伝えること"},
+    {k:"読",r:"よむ",h:"書かれた文字の意味をとらえる"},
+    {k:"書",r:"かく",h:"えんぴつやペンで文字や絵を記す"},
+    {k:"聞",r:"きく",h:"耳で音や声を感じとる"},
+    {k:"思",r:"おもう",h:"心のなかで考えること"},
+    {k:"知",r:"しる",h:"あたまのなかで覚えて分かっていること"},
+    {k:"考",r:"かんがえる",h:"あれこれとあたまを働かせること"},
+    {k:"教",r:"おしえる",h:"やり方や知識を伝えること"},
+    {k:"強",r:"つよい",h:"力があり、負けないようす"},
+    {k:"弱",r:"よわい",h:"力がなく、倒れやすいようす"},
+    {k:"新",r:"あたらしい",h:"できたばかりで、まだ新しいようす"},
+    {k:"古",r:"ふるい",h:"昔からあって、時が経っているようす"},
+    {k:"長",r:"ながい",h:"はしからはしまでの距離があるようす"},
+    {k:"多",r:"おおい",h:"たくさんのようす"},
+    {k:"少",r:"すくない",h:"ものの数がわずかしかないようす"},
+    {k:"高",r:"たかい",h:"上への距離がたっぷりあるようす"},
+    {k:"広",r:"ひろい",h:"スペースにゆとりがあるようす"}
+  ],
+  3:[],4:[],5:[],6:[]
+};
+
+// PDF実力テスト完全データベース
+const TEST_MASTER_DB = {
+  2: {
+    read: [
+      {k:"入れる", r:"いれる", h:"中にものを移動させること", ex:"かばんに筆箱を 入れる 。"},
+      {k:"小さい", r:"ちいさい", h:"形や規模が大きくないこと", ex:"とても 小さい ありを見つけた。"},
+      {k:"音", r:"おと", h:"空気の振動で聞こえるもの", ex:"遠くからきれいな 音 が聞こえる。"},
+      {k:"漢字", r:"かんじ", h:"意味をもった文字のこと", ex:"毎日新しい 漢字 を練習する。"},
+      {k:"天気", r:"てんき", h:"晴れや雨などの空のようす", ex:"明日の 天気 は晴れそうだ。"},
+      {k:"休む", r:"やすむ", h:"体を動かさず楽にすること", ex:"疲れたので少し 休む ことにする。"},
+      {k:"名前", r:"なまえ", h:"人やものを呼ぶためのことば", ex:"自分の 名前 をていねいに書く。"},
+      {k:"月", r:"つき", h:"夜空をてらす天体のこと", ex:"今夜はきれいな 月 が出ている。"},
+      {k:"大学", r:"だいがく", h:"専門的な勉強をする最高学校", ex:"お兄ちゃんは 大学 に通っている。"},
+      {k:"水", r:"みず", h:"人間が生きていくのに大切な液体", ex:"コップにたっぷり 水 をくむ。"},
+      {k:"口", r:"くち", h:"食べたりおしゃべりする部分", ex:"大きな 口 をあけてあいさつする。"},
+      {k:"犬", r:"いぬ", h:"人と仲良しの、おなじみのペット", ex:"となりで可愛い 犬 がほえている。"},
+      {k:"雨", r:"あめ", h:"雲から落ちてくる水のしずく", ex:"外は強い 雨 が降っている。"},
+      {k:"村", r:"むら", h:"町より小さく、自然豊かな集落", ex:"おじいちゃんは小さな 村 に住む。"},
+      {k:"青い", r:"あおい", h:"澄んだ海や空のような色", ex:"海がとても 青い ことがわかる。"},
+      {k:"山", r:"やま", h:"地面が高く盛り上がったところ", ex:"遠くに富士山という高い 山 が見える。"},
+      {k:"手", r:"て", h:"物を握ったり作ったりする部位", ex:"しっかりと 手 をあらってから食べる。"},
+      {k:"青空", r:"あおぞら", h:"青く晴れ渡った美しい空", ex:"青空 に白い雲がうかんでいる。"},
+      {k:"足", r:"あし", h:"体をささえ、歩くための部位", ex:"たくさん走って、 足 がつかれた。"},
+      {k:"学校", r:"がっこう", h:"友達と先生と一緒に勉強する場所", ex:"毎日元気に 学校 へ行く。"}
+    ],
+    write: [
+      {k:"一つ", r:"ひとつ", h:"物の数が1であること", ex:" ひとつ のりんごを分ける。"},
+      {k:"大小", r:"だいしょう", h:"大きさと小ささのこと", ex:"ものの 大小 を比べる。"},
+      {k:"一年生", r:"いちねんせい", h:"学校に入学したばかりの最初の学年", ex:"４月から 一年生 になる。"},
+      {k:"大好き", r:"だいすき", h:"特別に気に入っていて大好きなようす", ex:" だいすき なおかずを食べる。"},
+      {k:"大きな", r:"おおきな", h:"サイズや規模が非常に大きいようす", ex:" おおきな 家が見えてきた。"},
+      {k:"町", r:"まち", h:"多くの人が住むにぎやかな場所", ex:"みんなで まち 探検に出かける。"},
+      {k:"早い", r:"はやい", h:"時刻や時期が前の方であるようす", ex:"朝の はやい 時間に起きる。"},
+      {k:"遠く", r:"とおく", h:"距離がはるか離れている場所", ex:" とおく まで山々が見える。"},
+      {k:"正しい", r:"ただしい", h:"間違いがなく、道理にあっているようす", ex:" ただいし 姿勢で話を聞く。"},
+      {k:"お金", r:"おかね", h:"物を売り買いするための硬貨や紙幣", ex:" おかね を大切に使う。"},
+      {k:"人", r:"ひと", h:"社会を作って生きている人間", ex:"となりの ひと に挨拶をする。"},
+      {k:"車", r:"くるま", h:"荷物や人をのせてタイヤで走る乗り物", ex:" くるま に乗ってお出かけする。"},
+      {k:"先生", r:"せんせい", h:"学校でいろいろな勉強を教えてくれる人", ex:" せんせい の話をよく聞く。"},
+      {k:"本", r:"ほん", h:"文字や絵が書かれた紙をとじたもの", ex:"お気に入りの ほん を読む。"},
+      {k:"男の子", r:"おとこのこ", h:"若い男性、または少年のこと", ex:"元気な おとこのこ が遊んでいる。"},
+      {k:"女の子", r:"おんなのこ", h:"若い女性、または少女のこと", ex:"楽しそうな おんなのこ が歩いている。"},
+      {k:"耳", r:"みみ", h:"声や音を聞くためのからだの部分", ex:" みみ が大きくて可愛いウサギ。"},
+      {k:"王様", r:"おうさま", h:"国を治めるもっとも偉い指導者", ex:"おとぎ話に出てくる おうさま 。"},
+      {k:"自動車", r:"じどうしゃ", h:"エンジンなどで自ら走る自動車", ex:"道路をかっこいい じどうしゃ が走る。"},
+      {k:"左手", r:"ひだりて", h:"からだの左がわにある手", ex:" ひだりて を高くあげて合図する。"}
+    ]
+  },
+  3: {
+    read: [
+      {k:"大会", r:"たいかい", h:"多くの人が集まる大きなもよおし", ex:"週末に少年野球の 大会 がある。"},
+      {k:"前後", r:"ぜんご", h:"まえとうしろ、またはだいたいの位置", ex:"整列して 前後 の間隔をあける。"},
+      {k:"曜日", r:"ようび", h:"一週間のなかの決まった日", ex:"今日は何 曜日 の予定だっけ？"},
+      {k:"毎日", r:"まいにち", h:"毎日欠かさずのこと", ex:" 毎日 日記をつけるようにする。"},
+      {k:"日記", r:"にっき", h:"その日の出来事や思いを記した本", ex:"毎日の出来事を 日記 に書く。"},
+      {k:"野原", r:"のはら", h:"草がしげっている広い平らな地面", ex:"広い 野原 を全力でかけまわる。"},
+      {k:"半分", r:"はんぶん", h:"ある量をきれいに２つに分けた片方", ex:"りんごを 半分 に切って分けあう。"},
+      {k:"自分", r:"じぶん", h:"ほかの誰でもない、わたし自身のこと", ex:" 自分 の力で解くから面白い。"},
+      {k:"午後", r:"ごご", h:"お昼の12時から夜の12時までの時間", ex:" 午後 から友達と遊ぶ約束をする。"},
+      {k:"親友", r:"しんゆう", h:"とても仲が良く、信頼できる友達", ex:"幼なじみは、一生の 親友 だ。"},
+      {k:"花火", r:"はなび", h:"夜空できれいに光る火の芸術", ex:"夏の夜、みんなで大きな 花火 を見た。"},
+      {k:"兄弟", r:"きょうだい", h:"同じ親から生まれた男の兄弟や姉妹", ex:"お兄ちゃんと私は 兄弟 だ。"},
+      {k:"空気", r:"くうき", h:"地球を包んでいる、目に見えないガス", ex:"山の上はとても 空気 がおいしい。"},
+      {k:"人間", r:"にんげん", h:"知恵や心をもった、私たち人のこと", ex:" 人間 の知恵は素晴らしい。"},
+      {k:"足首", r:"あしくび", h:"あしとすねをつなぐ細い関節の部分", ex:"運動をする前に 足首 をしっかりほぐす。"},
+      {k:"算数", r:"さんすう", h:"数の計算や図形の勉強をする教科", ex:" 算数 の時間に進んで発言する。"},
+      {k:"茶色", r:"ちゃいろ", h:"お茶の葉を煎じたような、土に近い色", ex:"どんぐりは、つやのある 茶色 だ。"},
+      {k:"名前", r:"なまえ", h:"人やものを区別するための呼び方", ex:"ノートの表紙に 名前 をきちんと書く。"},
+      {k:"黄色", r:"きいろ", h:"レモンやひまわりのような明るい色", ex:"秋になるとイチョウの葉が 黄色 になる。"},
+      {k:"小鳥", r:"ことり", h:"小さくて可愛らしくさえずる鳥", ex:"窓の外で 小鳥 がうたっている。"}
+    ],
+    write: [
+      {k:"空中", r:"くうちゅう", h:"空の中、地上から離れた場所", ex:" くうちゅう にうかぶ風船。"},
+      {k:"点数", r:"てんすう", h:"テストなどの成績をあらわす数", ex:"テストの てんすう が高くて嬉しい。"},
+      {k:"水分", r:"すいぶん", h:"物の中に含まれているみずけ", ex:"熱中症対策で すいぶん を補給する。"},
+      {k:"六時", r:"ろくじ", h:"朝または夕方の6時の時間", ex:"朝の ろくじ に元気に起きる。"},
+      {k:"正月", r:"しょうがつ", h:"新しい年の最初の月、または3日間", ex:"おじいちゃんの家で しょうがつ をすごす。"},
+      {k:"計算", r:"けいさん", h:"数を足したり引いたりして答えをだす", ex:"算数の時間、すばやく けいさん をする。"},
+      {k:"会社", r:"かいしゃ", h:"みんなで仕事をして協力する組織", ex:"お父さんが かいしゃ へ通勤する。"},
+      {k:"本気", r:"ほんき", h:"うそやいい加減でなく、真剣な心", ex:" ほんき で走って最高記録をだす。"},
+      {k:"天才", r:"てんさい", h:"生まれつき素晴らしい才能をもつ人", ex:"勉強をがんばって てんさい になりたい。"},
+      {k:"科学的", r:"かがくてき", h:"実験や事実に基づいた、確実なようす", ex:" かがく てき な方法で調べてみる。"},
+      {k:"手紙", r:"てがみ", h:"相手に読んでもらうために書いた文章", ex:"遠くの友達へ てがみ をしたためる。"},
+      {k:"音楽", r:"おんがく", h:"リズムやメロディを楽しむもの", ex:"スピーカーから美しい おんがく が流れる。"},
+      {k:"風船", r:"ふうせん", h:"空気やガスを入れて膨らませたおもちゃ", ex:"空高く ふうせん が飛んでいった。"},
+      {k:"九九", r:"くく", h:"1桁のかけ算の覚えやすい言い方", ex:"かけ算の くく を全部暗記する。"},
+      {k:"夕日", r:"ゆうひ", h:"夕方、西の空に沈んでいく太陽", ex:"山の向こうにきれいな ゆうひ が見える。"},
+      {k:"地図", r:"ちず", h:"土地のようすを上から描いて縮めた図", ex:" ちず を見ながら初めての道を進む。"},
+      {k:"番組", r:"ばんぐみ", h:"テレビやラジオで放送されるプログラム", ex:"大好きなテレビの ばんぐみ を見る。"},
+      {k:"公園", r:"こうえん", h:"みんなが遊んだり散歩できる広場", ex:"学校の帰りに こうえん で遊ぶ。"},
+      {k:"元気", r:"げんき", h:"からだも心もとてもすこやかで強いようす", ex:" げんき な声であいさつをしよう。"},
+      {k:"目玉", r:"めだま", h:"目のなかにある、光を感じるまるい部分", ex:"朝ごはんに めだま やきを作る。"}
+    ]
+  },
+  4: {
+    read: [
+      {k:"社会", r:"しゃかい", h:"人々が助け合って共に生きているつながり", ex:"私たちの住む 社会 の仕組みを学ぶ。"},
+      {k:"真実", r:"しんじつ", h:"うそ偽りのまったくない、本当のこと", ex:"物語の最後に明かされた 真実 におどろく。"},
+      {k:"事実", r:"じじつ", h:"実際に起きた、うそのないできごと", ex:"ニュースの 事実 を正確に確認する。"},
+      {k:"長年", r:"ながねん", h:"何年もの、非常に長い年月のこと", ex:"おじいちゃんは 長年 職人を続けている。"},
+      {k:"場所", r:"ばしょ", h:"何かがある特定のスペースやエリア", ex:"待ち合わせの 場所 を地図で確かめる。"},
+      {k:"次回", r:"じかい", h:"つぎの機会、次にまわってくる時", ex:" 次回 のテストでは満点を取りたい。"},
+      {k:"学問", r:"ぐわくもん", h:"勉強をさらに深く追及すること", ex:"歴史や化学などの 学問 を究める。"},
+      {k:"平気", r:"へいき", h:"心配がなく、落ち着いていて平気なようす", ex:"難しい問題でも、彼なら 平気 で解いてしまう。"},
+      {k:"場面", r:"ばめん", h:"演劇や映画、物語の特定のシーン", ex:"劇のいちばん感動的な 場面 で涙が出た。"},
+      {k:"公平", r:"こうへい", h:"えこひいきせず、みんなを同じに扱うこと", ex:"誰に対しても 公平 な態度で接することが大切だ。"},
+      {k:"着物", r:"きもの", h:"日本の伝統的な美しい衣服（和服）", ex:"お正月にお母さんがきれいな 着物 を着た。"},
+      {k:"大豆", r:"だいず", h:"豆腐や醤油、味噌の原料になる豆", ex:" 大豆 からきな粉や豆腐が作られる。"},
+      {k:"太陽", r:"たいよう", h:"昼間の空にまぶしく輝く恒星", ex:" 太陽 の光をあびて植物が元気に育つ。"},
+      {k:"医者", r:"いしゃ", h:"病気やケガを治してくれる先生", ex:"風邪をひいたので 医者 に診てもらう。"},
+      {k:"病院", r:"びょういん", h:"病気を詳しく調べて治してくれる大きな施設", ex:"おじいちゃんが入院している 病院 に行く。"},
+      {k:"銀色", r:"ぎんいろ", h:"シルバーのように輝く、上品な灰色", ex:"夜空に 銀色 の月が冷たく光っている。"},
+      {k:"屋根", r:"やね", h:"雨や風を防ぐための、家のてっぺんの部分", ex:"赤い 屋根 のかわいい家が見えてきた。"},
+      {k:"絵本", r:"えほん", h:"たくさんの絵と文章で描かれた本", ex:"妹に読みやすくて面白い 絵本 を読んであげる。"},
+      {k:"水泳", r:"すいえい", h:"プールや海で体を使って泳ぐスポーツ", ex:"夏の体育は、プールでの 水泳 の授業だ。"},
+      {k:"麦茶", r:"むぎちゃ", h:"大麦を煎じて作った、香ばしくておいしいお茶", ex:"冷たい 麦茶 を飲んで、のどの渇きをいやす。"}
+    ],
+    write: [
+      {k:"月曜", r:"げつよう", h:"一週間の始まりとなる最初の平日", ex:"新しい一週間が げつよう からスタート。"},
+      {k:"時代", r:"じだい", h:"歴史のなかのある一定の区切られた期間", ex:"古き良き じだい の物語を読む。"},
+      {k:"日数", r:"にっすう", h:"ある期間の、一日の合計の数のこと", ex:"夏休みが終わるまでの にっすう を数える。"},
+      {k:"意味", r:"いみ", h:"言葉や漢字が表している大切な内容", ex:"知らない漢字の いみ を辞書で調べる。"},
+      {k:"様子", r:"ようす", h:"人やものの状態、またはまわりの雰囲気", ex:"友達が困っていないか、 ようす を観察する。"},
+      {k:"偉大", r:"いだい", h:"普通よりずっと優れていて、とても立派なようす", ex:"歴史に名を残した いだい な人物を学ぶ。"},
+      {k:"国内", r:"こくない", h:"自分の住んでいる、国の中のエリア", ex:" こくない の色々な観光地を旅する。"},
+      {k:"学期", r:"がっき", h:"学校の一年間をいくつかの期間に分けたもの", ex:"新しい がっき が始まって、席替えをする。"},
+      {k:"役目", r:"やくめ", h:"自分が責任をもってやるべき大切な仕事", ex:"学級委員としての やくめ を最後まで果たす。"},
+      {k:"来週", r:"らいしゅう", h:"今の週の、次の新しい一週間のこと", ex:" らいしゅう は待ちに待った遠足の日だ。"},
+      {k:"口笛", r:"くちぶえ", h:"口をすぼめて、息を吹いて音をだすこと", ex:"上手に くちぶえ を吹いて鳥と遊ぶ。"},
+      {k:"写真", r:"しゃしん", h:"カメラを使って記録したもの", ex:"みんなで並んで記念の しゃしん を撮る。"},
+      {k:"毛虫", r:"けむし", h:"体に長い毛がたくさん生えている虫", ex:"庭の木の葉っぱに けむし を見つけた。"},
+      {k:"電柱", r:"でんちゅう", h:"電線を空中に張るために立てる高い柱", ex:"ボール遊びをしていて でんちゅう にぶつかる。"},
+      {k:"筆箱", r:"ふてばこ", h:"筆記用具をしまっておく箱", ex:"新しい ふでばこ を買ってもらって嬉しい。"},
+      {k:"洋服", r:"ようふく", h:"洋風の衣服のこと", ex:"お気に入りの綺麗な ようふく を着て出かける。"},
+      {k:"手帳", r:"てちょう", h:"予定をメモするための小さな帳面", ex:"大切な予定を小さな てちょう に書き留める。"},
+      {k:"野球", r:"やきゅう", h:"バットでボールを打ち、塁を走る球技", ex:"放課後に校庭で友達と やきゅう をする。"},
+      {k:"緑茶", r:"りょくちゃ", h:"日本風の緑色のお茶", ex:"お団子を食べながら温かい りょくちゃ を飲む。"},
+      {k:"旅行", r:"りょこう", h:"いつも住んでいる場所を離れて、遠くに遊びに行く", ex:"家族みんなで温泉へ りょこう する。"}
+    ]
+  },
+  5: {
+    read: [
+      {k:"以上", r:"いじょう", h:"それより上、またはこれで終わりということ", ex:"質問は 以上 です。ありがとうございました。"},
+      {k:"実感", r:"じっかん", h:"頭で考えるだけでなく、身に染みて本当だと思うこと", ex:"優勝して、ようやく努力が報われたと 実感 した。"},
+      {k:"当然", r:"とうぜん", h:"あたりまえで、誰もがそうだと思うこと", ex:"約束を守るのは、人として 当然 のルールだ。"},
+      {k:"特色", r:"とくしょく", h:"ほかとは違っている、特別なすぐれたところ", ex:"この学校の 特色 は、みんなが元気なことだ。"},
+      {k:"共同", r:"きょうどう", h:"２人以上の人が、力を合わせて一緒に行うこと", ex:"クラス全員で 共同 のポスターを制作する。"},
+      {k:"作法", r:"さほう", h:"お辞儀や食事など、社会で守るべき正しいマナー", ex:"お茶会に参加して、正しいお茶の 作法 を学ぶ。"},
+      {k:"単位", r:"たんい", h:"長さ(m)や重さ(kg)など、量を測る基本の基準", ex:"算数で、長さや体積の 新しい 単位 を勉強する。"},
+      {k:"各地", r:"かくち", h:"いろいろなすべての場所や地域のこと", ex:"日本 各地 の美味しい特産品を調べる。"},
+      {k:"民族", r:"みんぞく", h:"言語や文化、歴史を共にする集団", ex:"世界には色々な文化をもった 民族 が生活している。"},
+      {k:"各自", r:"かくじ", h:"ひとりひとり、自分自身のこと", ex:"遠足の持ち物は、 各自 でしっかり準備する。"},
+      {k:"老人", r:"ろうじん", h:"年齢をかなり重ねた年長の人", ex:" 老人 ホームを訪ねて、昔の面白い話を聞く。"},
+      {k:"塩水", r:"しおみず", h:"塩が溶けていて、しょっぱい味のする水", ex:"理科の実験で、塩と水を混ぜて 塩水 をつくる。"},
+      {k:"薬指", r:"くすりゆび", h:"中指と小指の間にある、4番目の指のこと", ex:" 薬指 に綺麗なおもちゃの指輪をはめて遊ぶ。"},
+      {k:"矢印", r:"やじるし", h:"方向を指し示すための、矢の形をしたマーク", ex:" 矢印 の方向に進むと、広い図書室に着く。"},
+      {k:"俳句", r:"はいく", h:"五・七・五の十七音で、季節を詠む短い日本の詩", ex:"国語の授業で、秋のようすを表す 俳句 をつくる。"},
+      {k:"卒業", r:"そつぎょう", h:"学校の勉強をすべてやり遂げて、新しい道へ進むこと", ex:"お世話になった学校から、いよいよ 卒業 する。"},
+      {k:"野菜", r:"やさい", h:"食用の草本植物のこと", ex:"健康のために、毎日の食事で 野菜 をたくさん食べる。"},
+      {k:"英語", r:"えいご", h:"イングランド起源の世界的な言語", ex:"将来、世界中の人と話すために 英語 を勉強する。"},
+      {k:"夕飯", r:"ゆうはん", h:"夕方〜夜にとる一日の最後の食事", ex:"今日の 夕飯 は、大好きなハンバーグだから楽しみだ。"},
+      {k:"料理", r:"りょうり", h:"食材を美味しく食べられるように作ること", ex:"お母さんの手伝いをして、一緒に 料理 をつくる。"}
+    ],
+    write: [
+      {k:"対象", r:"たいしょう", h:"目標や相手となる、特定のもののこと", ex:"小学生を たいしょう にした新しい本が発売される。"},
+      {k:"頑張る", r:"がんばる", h:"困難に負けず努力を続けること", ex:"次のテストで100点を取れるよう がんばる 。"},
+      {k:"結局", r:"けっきょく", h:"いろいろあったけれど、最後に行き着いた結果", ex:"あれこれ迷ったけれど、 けっきょく 青い服にした。"},
+      {k:"流通", r:"りゅうつう", h:"商品が生産者から消費者に届く流れ", ex:"野菜やくだものが全国に りゅうつう する仕組み。"},
+      {k:"新型", r:"しんがた", h:"新しいタイプ、新しいデザインのこと", ex:"自動車メーカーが しんがた の電気自動車を発表。"},
+      {k:"特定", r:"とくてい", h:"それと決めて、はっきりと見定めること", ex:"顕微鏡を使って、原因の小さな菌を とくてい する。"},
+      {k:"以前", r:"いぜん", h:"今より前、または少し昔のこと", ex:" いぜん に来たことのある公園で、懐かしく遊ぶ。"},
+      {k:"数量", r:"すうりょう", h:"ものの数と、体積や重さなどの量のこと", ex:"注文した品物の すうりょう に間違いがないか数える。"},
+      {k:"特殊", r:"とくしゅ", h:"普通とは大きく違っている、特別なようす", ex:" とくしゅ な訓練を受けた専門家が救助活動を行う。"},
+      {k:"機会", r:"きかい", h:"ちょうど良いチャンスのこと", ex:"外国の友達と話す きかい があってドキドキした。"},
+      {k:"課題", r:"かだい", h:"解決しなければならない、大切な宿題やテーマ", ex:"夏休みの自由研究の かだい を今日から始める。"},
+      {k:"演奏", r:"えんそう", h:"楽器を弾いて曲を聞かせること", ex:"音楽会で、がっきを えんそう する。"},
+      {k:"散歩", r:"さんぽ", h:"気分転換や健康のために、のんびり歩くこと", ex:"天気がいいので、近所の公園まで さんぽ に出かける。"},
+      {k:"名札", r:"なふだ", h:"名前が書かれた、服につける小さな札", ex:"朝、学校に登校したら、すぐに左胸に なふだ をつける。"},
+      {k:"食塩", r:"しょくえん", h:"一般に売られている白いお塩のこと", ex:"お水に しょくえん を入れて、きれいに溶かしてみる。"},
+      {k:"小指", r:"こゆび", h:"手足のいちばん外側の一番小さな指", ex:"転びそうになって、右足の こゆび を少しぶなった。"},
+      {k:"食堂", r:"しょくどう", h:"食事を摂るための専門の部屋", ex:"お昼休みに、みんなでワイワイと しょくどう に集まる。"},
+      {k:"交番", r:"こうばん", h:"街のおまわりさんがいる小さな警察の出張所", ex:"道でお財布を拾ったので、すぐに近くの こうばん に届ける。"},
+      {k:"給食", r:"きゅうしょく", h:"学校で支給される昼食", ex:"今日の きゅうしょく の時間は、大好きな揚げパンだ。"},
+      {k:"牧場", r:"ぼくじょう", h:"放牧をして家畜を育てる場所", ex:" ぼくじょう で、しぼりたての美味しい牛乳を飲む。"}
+    ]
+  },
+  6: {
+    read: [
+      {k:"必然", r:"ひつぜん", h:"必ずそうなる、それ以外にあり得ないこと", ex:"毎日しっかり勉強していれば、合格は 必然 だ。"},
+      {k:"原形", r:"げんけい", h:"手が加えられる前の、元のままの形や状態", ex:"ねんど細工が崩れてしまい、元の 原形 をとどめていない。"},
+      {k:"管理", r:"かんり", h:"維持して保っておくよう取り計らうこと", ex:"健康を損なわないよう、毎日の体調をしっかり 管理 する。"},
+      {k:"必殺", r:"ひっさつ", h:"必ずあいてをたおす強力なわざ", ex:"ゲームの最後で、とっておきの 必殺 わざを発動する。"},
+      {k:"機関", r:"きかん", h:"特定の事業や役割を担当する、社会の組織や仕組み", ex:"交通機関を利用して、遠い街まで安全に移動する。"},
+      {k:"公共", r:"こうきょう", h:"社会一般、みんなに共通するもの", ex:"図書館や公園などの 公共 の施設は大切に使おう。"},
+      {k:"例年", r:"れいねん", h:"毎年のいつもの状態のこと", ex:" 例年 に比べて、今年の冬はとても暖かく感じる。"},
+      {k:"要約", r:"ようやく", h:"長い話や文章をコンパクトにまとめること", ex:"読んだ本のあらすじを、短い言葉で 要約 してみる。"},
+      {k:"特産", r:"とくさん", h:"その特定の土地でしか取れない、特別な名産品", ex:"北海道の 特産 である、美味しいメロンを食べる。"},
+      {k:"単調", r:"たんちょう", h:"変化や面白みがなく、ずっと一本調子で続くようす", ex:" 単調 な作業でも、集中して丁寧に進めることが大切だ。"},
+      {k:"敗者", r:"はいしゃ", h:"勝負に負けた人のこと", ex:"試合が終われば、勝者も 敗者 も関係なくお互いを称え合う。"},
+      {k:"加熱", r:"かねつ", h:"熱を加えて、温度を高くすること", ex:"食材を安全に食べるために、フライパンでしっかり 加熱 する。"},
+      {k:"満開", r:"まんかい", h:"桜などの花が、すべての枝いっぱいに咲き誇ること", ex:"公園 of 桜が 満開 になり、多くの人で賑わっている。"},
+      {k:"改札", r:"かいさつ", h:"駅で、切符やカードを確認して通る場所", ex:"駅の 改札 をICカードでスムーズにタッチして通る。"},
+      {k:"最初", r:"さいしょ", h:"一番はじめ、物事のスタート地点のこと", ex:" 何事も、 最初 の一歩を踏み出す勇気がもっとも大切だ。"},
+      {k:"大変", r:"たいへん", h:"非常に苦労する、または重大なできごとのこと", ex:"準備が 大変 だったけれど、イベントは大成功に終わった。"},
+      {k:"低温", r:"ていおん", h:"温度が普通よりかなり低い状態のこと", ex:"食品を長持ちさせるために、 低温 の冷蔵庫で保存する。"},
+      {k:"無線", r:"むせん", h:"ケーブルなどの線を使わず、電波で通信すること", ex:" 無線 のインターネットを使って、タブレットを操作する。"},
+      {k:"商品", r:"しょうひん", h:"お店で売るための、価値のある品物のこと", ex:"棚に並んだ新しい 商品 を、よく見て選ぶ。"},
+      {k:"取材", r:"しゅざい", h:"事実を調べるために、インタビューや見学に行くこと", ex:"新聞部の活動として、街の人気のパン屋さんへ 取材 に行く。"}
+    ],
+    write: [
+      {k:"残高", r:"ざんだか", h:"収支引き去りの結果、残っている金額", ex:"お小遣い帳をつけて、現在の銀行の ざんだか を確認する。"},
+      {k:"不良", r:"ふりょう", h:"質や状態が良くないこと。または作物が実らないこと", ex:"今年は雨が全然降らなかったので、野菜が ふりょう だ。"},
+      {k:"課長", r:"かちょう", h:"官庁や会社の「課」の長として指揮をとる役職", ex:"お父さんが、新しく会社の かちょう に昇進した。"},
+      {k:"生産", r:"せいさん", h:"生活に必要なものを新しく作り出すこと", ex:"地元で採れた美味しい野菜を、安全に せいさん する。"},
+      {k:"必要", r:"ひつよう", h:"欠かせず、絶対になくてはならないこと", ex:"漢字テストで良い点を取るには、毎日の練習が ひつよう だ。"},
+      {k:"国産", r:"こくさん", h:"自国、自分の国内で作られたもの", ex:"安全で美味しい こくさん の牛肉を使ってすき焼きをする。"},
+      {k:"要望", r:"ようぼう", h:"こうしてほしいと、強く相手にお願いすること", ex:"学校生活をもっと楽しくするための、生徒の ようぼう を伝える。"},
+      {k:"養分", r:"ようぶん", h:"生長や生命維持に必要な滋養の成分", ex:"土の中にたっぷりと ようぶん を与えて、野菜を育てる。"},
+      {k:"分類", r:"ぶんるい", h:"種類や性質ごとに綺麗にグループ分けすること", ex:"図書館の本を、ジャンルごとに分かりやすく ぶんるい する。"},
+      {k:"要点", r:"ようてん", h:"物事のいちばん重要なポイント", ex:"先生の話の ようてん を聞き逃さないよう、しっかりノートに書く。"},
+      {k:"不安", r:"ふan", h:"気がかりで落ち着かない心配な気持ち", ex:"初めての場所に行くのは、少し ふあん だけれど楽しみだ。"},
+      {k:"失業", r:"しつぎょう", h:"職を失うこと", ex:"景気が悪くなって、おじさんが しつぎょう して困っている。"},
+      {k:"手芸", r:"しゅげい", h:"手作業で作る可愛いクラフトや刺繍のこと", ex:"おばあちゃんから教わって、お人形の服を しゅげい で作る。"},
+      {k:"表札", r:"ひょうさつ", h:"家の外口に掲げる、居住者の名前を示した板", ex:"新しく新築した家の玄関に、立派な ひょうさつ を出す。"},
+      {k:"消費", r:"しょうひ", h:"使って無くすこと", ex:"からだを動かして、たっぷりとエネルギーを しょうひ する。"},
+      {k:"伝達", r:"でんたつ", h:"意志や命令などをしっかりと伝えること", ex:"先生からの重要な連絡を、班の全員に正確に でんたつ する。"},
+      {k:"便利", r:"べんり", h:"手間がかからず、使って都合が良いようす", ex:"スマートフォンは、何でも調べられて本当に べんり な道具だ。"},
+      {k:"氏名", r:"しめい", h:"氏(名字)と名前をあわせたなまえ", ex:"解答用紙のてっぺんの枠に、自分の しめい をはっきり書く。"},
+      {k:"付録", r:"ふろく", h:"本や雑誌の、おまけの嬉しいアイテムや小冊子", ex:"今月発売の科学雑誌には、豪華な天体望遠鏡の ふろく がつく。"},
+      {k:"駅伝", r:"えきでん", h:"みんなでタスキを繋ぐリレー競争", ex:"学校の代表メンバーとして、有名な新春の えきでん に出たい。"}
+    ]
+  }
+};
+
+// ===================== ゲーム状態 =====================
+const G = {
+  playerMode: 'single', // 'single' (1人) or 'multi' (2人)
+  gamePlayMode: 'test', // 'battle' (通常バトル) or 'test' (実力テスト)
+  testChallenger: 'a',  // 2人テスト時にどちらがテストを解くか ('a' or 'b')
+  grade: 2,           // デフォルトは小2
+  maxHp: 20,          // 通常バトルのHP
+  questionMode: 'all',
+  questionFormat: 'both', // 'both', 'read', 'write'
+  aName: 'チャレンジャー',
+  bName: 'COM',
+  currentPool: [],
+  aHp: 20,
+  bHp: 20,
+  turn: 'a',
+  phase: 'draw',
+  drawn: null,
+  readOpts: [],
+  answered: null,
+  aHintsLeft: 3,
+  bHintsLeft: 3,
+  hintAsked: false,
+  showHira: false,
+  writeDone: false,
+  aiEvaluating: false, // AI判定中フラグ
+  aiResult: null,      // AI判定のレスポンス
+  turnCount: 1,       // 現在のターンまたは問題番号
+  winner: null,
+  lastDmg: 0,
+  endMsg: '',
+  isDrawing: false,
+  lastPos: null,
+  
+  // テスト＆スコア管理
+  testHistory: [],    // 各問題の正誤履歴 [{index: 1, k: "xx", ok: true}]
+  singleCorrectCount: 0,
+  singleStartTime: 0,
+  singleTotalTimeSec: 0
+};
+
+// ===================== ユーティリティ =====================
+function formatRuby(text) {
+  if (!text) return '';
+  return text.replace(/\{[^}]+\}/g, '');
+}
+
+function genOpts(correct, grade) {
+  const opts = [correct];
+  const allReadings = [];
+  
+  // マスタから全読みを統合
+  const testSet = TEST_MASTER_DB[grade] || TEST_MASTER_DB[2];
+  testSet.read.forEach(item => { if(item.r !== correct) allReadings.push(item.r); });
+  testSet.write.forEach(item => { if(item.r !== correct) allReadings.push(item.r); });
+  
+  (KANJI_DB[grade]||[]).forEach(item => { if(item.r !== correct) allReadings.push(item.r); });
+  
+  for (let i = allReadings.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [allReadings[i],allReadings[j]] = [allReadings[j],allReadings[i]];
+  }
+  for (let i=0; i<allReadings.length && opts.length<4; i++) {
+    if (!opts.includes(allReadings[i])) opts.push(allReadings[i]);
+  }
+  while (opts.length < 4) {
+    opts.push("テスト" + opts.length);
+  }
+  for (let i = opts.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [opts[i],opts[j]] = [opts[j],opts[i]];
+  }
+  return opts;
+}
+
+function goTitle() {
+  try { BGM.play('title'); } catch(e) {}
+  showScreen('title');
+}
+
+// ===================== 画面管理 =====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const t = document.getElementById('screen-'+id);
+  if (t) t.classList.add('active');
+}
+
+function goSetupScreen() {
+  try { BGM.play('home'); } catch(e) {}
+  showScreen('setup');
+}
+
+function selectPlayerMode(pmode) {
+  G.playerMode = pmode;
+  document.getElementById('play-single').classList.toggle('on', pmode === 'single');
+  document.getElementById('play-multi').classList.toggle('on', pmode === 'multi');
+  
+  const setupNameGrid = document.getElementById('setup-name-grid');
+  const wrapPlayerB = document.getElementById('wrap-player-b');
+  const inputA = document.getElementById('input-a');
+  
+  if (pmode === 'single') {
+    setupNameGrid.classList.add('single-player');
+    if (wrapPlayerB) wrapPlayerB.style.display = 'none';
+    inputA.value = G.gamePlayMode === 'test' ? 'テスト挑戦者' : 'チャレンジャー';
+  } else {
+    setupNameGrid.classList.remove('single-player');
+    if (wrapPlayerB) wrapPlayerB.style.display = 'block';
+    inputA.value = 'プレイヤーA';
+  }
+  updateSetupInteractiveView();
+}
+
+function selectGamePlayMode(mode) {
+  G.gamePlayMode = mode;
+  document.getElementById('gamemode-battle').classList.toggle('on', mode === 'battle');
+  document.getElementById('gamemode-test').classList.toggle('on', mode === 'test');
+  
+  const formatLabel = document.getElementById('format-label');
+  const formatSelectionContainer = document.getElementById('format-selection-container');
+  const ruleDescPanel = document.getElementById('rule-desc-panel');
+
+  if (mode === 'test') {
+    formatLabel.innerHTML = '<ruby>テスト形式<rt>けいしき</rt></ruby> · Format';
+    formatSelectionContainer.innerHTML = `
+      <button class="mode-btn on" id="format-read" onclick="selectFormat('read')"><ruby>読<rt>よ</rt></ruby>みテスト (20問)</button>
+      <button class="mode-btn" id="format-write" onclick="selectFormat('write')"><ruby>書<rt>か</rt></ruby>きテスト (20問)</button>
+    `;
+    G.questionFormat = 'read'; // 初期は読みテスト
+    ruleDescPanel.innerHTML = `
+      📝 <b>実力テストモードへようこそ！</b><br>
+      アップロードされた本格漢字テスト（①〜⑳）に順番に取り組みます。<br>
+      📖 <b>読みテスト（20問）</b>: 選択肢から正しい読み方を選びます。<br>
+      ✏️ <b>書きテスト（20問）</b>: キャンバスに書いてAIに採点してもらいます。<br>
+      ※2人プレイの場合、片方がテストに取り組み、もう一方は通常問題をランダムに解きます。
+    `;
+  } else {
+    formatLabel.innerHTML = '<ruby>クイズ形式<rt>けいしき</rt></ruby> · Format';
+    formatSelectionContainer.innerHTML = `
+      <button class="mode-btn on" id="format-both" onclick="selectFormat('both')"><ruby>読書<rt>よみ・かき</rt></ruby></button>
+      <button class="mode-btn" id="format-read" onclick="selectFormat('read')"><ruby>読<rt>よ</rt></ruby>みのみ</button>
+      <button class="mode-btn" id="format-write" onclick="selectFormat('write')"><ruby>書<rt>か</rt></ruby>きのみ</button>
+    `;
+    G.questionFormat = 'both';
+    ruleDescPanel.innerHTML = `
+      🎴 <b>毎ターン１枚ドロー！クイズに挑戦！</b><br>
+      📖 <b>1文字の「読み」</b> → <span class="dmg-txt">-2 ダメージ</span><br>
+      ✏️ <b>1文字の「書き」</b> → <span class="dmg-txt">-4 ダメージ⚡ (AI判定付!)</span><br>
+      🔥 <b>二字熟語の「読み」</b> → <span class="dmg-txt">-4 ダメージ💥</span><br>
+      ⚡ <b>二字熟語の「書き」</b> → <span class="dmg-txt">-8 超ダメージ⚡💥 (AI判定付!)</span><br>
+      💡 <b>ヒントは各プレイヤー毎 3回まで！</b>
+    `;
+  }
+  updateSetupInteractiveView();
+}
+
+function selectFormat(format) {
+  G.questionFormat = format;
+  document.querySelectorAll('#format-selection-container .mode-btn').forEach(b => {
+    const match = b.id === 'format-'+format;
+    b.classList.toggle('on', match);
+  });
+}
+
+// どちらのプレイヤーがテストを解くか選択
+function selectTestChallenger(player) {
+  G.testChallenger = player;
+  document.getElementById('test-challenger-a').classList.toggle('on', player === 'a');
+  document.getElementById('test-challenger-b').classList.toggle('on', player === 'b');
+}
+
+function updateSetupInteractiveView() {
+  const hpSection = document.getElementById('hp-interactive-section');
+  const testSelectorSection = document.getElementById('test-selector-section');
+  
+  if (G.gamePlayMode === 'test') {
+    hpSection.style.display = 'none';
+    if (G.playerMode === 'multi') {
+      testSelectorSection.style.display = 'block';
+    } else {
+      testSelectorSection.style.display = 'none';
+    }
+  } else {
+    hpSection.style.display = 'block';
+    testSelectorSection.style.display = 'none';
+    selectPlayerMode(G.playerMode);
+  }
+}
+
+// 学年ボタン生成 (小2〜小6)
+(function() {
+  const row = document.getElementById('grade-row');
+  if (!row) return;
+  row.innerHTML = '';
+  for (let g=2; g<=6; g++) {
+    const btn = document.createElement('button');
+    btn.className = 'g-btn';
+    btn.dataset.grade = g;
+    btn.innerHTML = g + '<ruby>年<rt>ねん</rt></ruby>';
+    btn.onclick = (function(grade){ return function(){ G.grade=grade; updateGradeButtons(); }; })(g);
+    row.appendChild(btn);
+  }
+  updateGradeButtons();
+})();
+
+function updateGradeButtons() {
+  document.querySelectorAll('.g-btn').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.grade) === G.grade);
+  });
+}
+
+// ===================== HPスライダー =====================
+function drawHpSliderScale() {
+  const container = document.getElementById('hp-marks-container');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  const currentVal = parseInt(document.getElementById('hp-slider').value);
+  container.classList.remove('q-marks');
+  for (let hp = 10; hp <= 100; hp += 10) {
+    const mark = document.createElement('div');
+    mark.className = 'hp-mark-item' + (hp <= currentVal ? ' active' : '');
+    mark.innerHTML = (hp===10||hp===50||hp===100) ? `<span>${hp}</span>` : `<span>&nbsp;</span>`;
+    container.appendChild(mark);
+  }
+}
+
+function onHpSliderInput(val) {
+  const display = document.getElementById('hp-display');
+  const badge = document.getElementById('hp-badge');
+  G.maxHp = parseInt(val);
+  if (display) display.textContent = val + ' HP';
+  if (badge) {
+    badge.className = 'hp-mode-badge';
+    if (val <= 30) { badge.classList.add('quick'); badge.textContent = '電撃戦（クイック）'; }
+    else if (val <= 70) { badge.classList.add('standard'); badge.textContent = '標準対局（スタンダード）'; }
+    else { badge.classList.add('endless'); badge.textContent = '宿命の決戦（ロング）'; }
+  }
+  drawHpSliderScale();
+}
+
+// 中断して最初からやり直す機能
+function abortAndRetry() {
+  if (confirm("ゲームを中断して、設定画面に戻りますか？\n（現在の記録はリセットされます）")) {
+    G.winner = null;
+    G.phase = 'draw';
+    G.drawn = null;
+    G.answered = null;
+    G.aiResult = null;
+    G.aiEvaluating = false;
+    G.testHistory = [];
+    document.body.classList.remove('danger-flash');
+    goSetupScreen();
+  }
+}
+
+// ===================== デッキ・テスト問題構築 =====================
+function compileDeck(grade, mode) {
+  let deck = [];
+  const testSet = TEST_MASTER_DB[grade] || TEST_MASTER_DB[2];
+  testSet.read.forEach(item => {
+    deck.push({k:item.k, r:item.r, h:item.h, ex:item.ex, type:'word'});
+  });
+  testSet.write.forEach(item => {
+    deck.push({k:item.k, r:item.r, h:item.h, ex:item.ex, type:'word'});
+  });
+  
+  (KANJI_DB[grade]||[]).forEach(item => {
+    deck.push({k:item.k, r:item.r, h:item.h, ex:null, type:'single'});
+  });
+  return deck;
+}
+
+// ===================== ゲーム開始 =====================
+function startGame() {
+  try { BGM.initCtx(); } catch(e) {}
+  
+  G.aName = document.getElementById('input-a').value.trim()||'プレイヤーA';
+  G.bName = document.getElementById('input-b').value.trim()||'プレイヤーB';
+  
+  // テストかバトルかでプールとゲーム構成を設定
+  if (G.gamePlayMode === 'test') {
+    const testSet = TEST_MASTER_DB[G.grade] || TEST_MASTER_DB[2];
+    const selectedFormat = G.questionFormat === 'write' ? 'write' : 'read';
+    G.currentPool = JSON.parse(JSON.stringify(testSet[selectedFormat])); // PDF通りの順番を維持してコピー
+    G.maxQuestions = 20; 
+  } else {
+    G.currentPool = compileDeck(G.grade, G.questionMode);
+    // シャッフル
+    for (let i = G.currentPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [G.currentPool[i], G.currentPool[j]] = [G.currentPool[j], G.currentPool[i]];
+    }
+  }
+
+  G.turn='a'; 
+  G.phase='draw'; 
+  G.drawn=null;
+  G.aHintsLeft=3; 
+  G.bHintsLeft=3;
+  G.hintAsked=false; 
+  G.showHira=false;
+  G.turnCount=1; 
+  G.winner=null;
+  G.writeDone=false; 
+  G.aiEvaluating=false;
+  G.aiResult=null;
+  G.answered=null;
+  G.singleCorrectCount = 0;
+  G.singleStartTime = Date.now();
+  G.testHistory = [];
+
+  const gameHpRow = document.getElementById('game-hp-row');
+  
+  if (G.playerMode === 'single') {
+    G.bName = 'COM';
+    gameHpRow.classList.add('single-player');
+    document.getElementById('hpcard-b').style.display = 'none';
+    document.getElementById('vs-text').style.display = 'none';
+    
+    const cardA = document.getElementById('hpcard-a');
+    cardA.className = 'hp-card single';
+    document.getElementById('hpname-a').textContent = G.aName;
+    document.getElementById('hp-a').textContent = '0';
+    
+    if (G.gamePlayMode === 'test') {
+      document.getElementById('hc-num-a').innerHTML = `<span id="hp-a">0</span><span style="font-size:14px;color:var(--muted)">/20問 合格</span>`;
+    } else {
+      document.getElementById('hc-num-a').innerHTML = `<span id="hp-a">0</span><span style="font-size:14px;color:var(--muted)">正解</span>`;
+    }
+    
+    const barA = document.getElementById('hpbar-a');
+    barA.style.width = '0%';
+    barA.style.background = 'var(--gold)';
+    
+  } else {
+    // 2人プレイのセットアップ
+    gameHpRow.classList.remove('single-player');
+    document.getElementById('hpcard-b').style.display = 'block';
+    document.getElementById('vs-text').style.display = 'block';
+    
+    // 対戦時のHP(テストモード時も体力ゲージ付きの対決)
+    G.maxHp = G.gamePlayMode === 'test' ? 20 : (parseInt(document.getElementById('hp-slider').value) || 20);
+    G.aHp=G.maxHp; 
+    G.bHp=G.maxHp;
+    
+    const cardA = document.getElementById('hpcard-a');
+    cardA.className = 'hp-card a';
+    document.getElementById('hpname-a').textContent = G.aName;
+    document.getElementById('hc-num-a').innerHTML = `<span id="hp-a">${G.maxHp}</span><span style="font-size:14px;color:var(--muted)">/${G.maxHp}</span>`;
+    
+    const cardB = document.getElementById('hpcard-b');
+    cardB.className = 'hp-card b';
+    document.getElementById('hpname-b').textContent = G.bName;
+    document.getElementById('hc-num-b').innerHTML = `<span id="hp-b">${G.maxHp}</span><span style="font-size:14px;color:var(--muted)">/${G.maxHp}</span>`;
+    
+    updateHP('a');
+    updateHP('b');
+  }
+  
+  updateGameUI();
+  BGM.play('battle');
+  showScreen('game');
+}
+
+function updateGameUI() {
+  const isA = G.turn==='a';
+  const pill = document.getElementById('turn-pill');
+  if (pill) {
+    if (G.gamePlayMode === 'test') {
+      if (G.playerMode === 'single') {
+        pill.className = 'turn-pill single';
+        pill.innerHTML = `📝 ${G.grade}年生 漢字テスト挑戦中！`;
+      } else {
+        const challengerName = G.testChallenger === 'a' ? G.aName : G.bName;
+        const casualName = G.testChallenger === 'a' ? G.bName : G.aName;
+        
+        pill.className = 'turn-pill ' + G.turn;
+        if (G.turn === G.testChallenger) {
+          pill.innerHTML = `📝 ${challengerName} はテスト挑戦中！`;
+        } else {
+          pill.innerHTML = `🎴 ${casualName} はランダムバトル！`;
+        }
+      }
+    } else {
+      if (G.playerMode === 'single') {
+        pill.className = 'turn-pill single';
+        pill.innerHTML = `⭐ ${G.aName} の挑戦`;
+      } else {
+        pill.className = 'turn-pill '+G.turn;
+        pill.innerHTML = (isA?'🟦 ':'🟧 ')+(isA?G.aName:G.bName)+' の<ruby>番<rt>ばん</rt></ruby>';
+      }
+    }
+  }
+  
+  const tc = document.getElementById('turn-count');
+  if (tc) {
+    if (G.gamePlayMode === 'test') {
+      // 2人プレイでテスト中の場合、テスト側の進捗問題数を表示
+      if (G.playerMode === 'multi') {
+        tc.textContent = `問題 ${G.turnCount}`;
+      } else {
+        tc.textContent = `問題 ${G.turnCount} / 20`;
+      }
+    } else {
+      tc.textContent = 'TURN '+G.turnCount;
+    }
+  }
+  
+  if (G.playerMode === 'multi') {
+    updateHP('a'); 
+    updateHP('b');
+    const isDanger = G.aHp<=G.maxHp*0.25||G.bHp<=G.maxHp*0.25;
+    document.body.classList.toggle('danger-flash', isDanger);
+    if (isDanger && G.winner === null) BGM.play('tense');
+    else if (G.phase!=='end' && G.winner === null) BGM.play('battle');
+  } else {
+    document.body.classList.remove('danger-flash');
+    if (G.phase!=='end' && G.winner === null) BGM.play('battle');
+  }
+  
+  const arena = document.getElementById('arena');
+  if (arena) arena.className = 'arena '+ (G.playerMode === 'single' ? 'single' : G.turn);
+  
+  renderPhase();
+}
+
+function updateHP(player) {
+  if (G.playerMode === 'single') {
+    const total = G.gamePlayMode === 'test' ? 20 : G.turnCount;
+    const pct = Math.min(100, (G.singleCorrectCount / total) * 100);
+    const numEl = document.getElementById('hp-a');
+    if (numEl) numEl.textContent = G.singleCorrectCount;
+    const bar = document.getElementById('hpbar-a');
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.style.background = 'var(--gold)';
+    }
+    return;
+  }
+  
+  const hp = player==='a'?G.aHp:G.bHp;
+  const pct = Math.max(0,(hp/G.maxHp)*100);
+  let color = pct<=25?'var(--red)':pct<=50?'var(--gold-dark)':'var(--green)';
+  const numEl = document.getElementById('hp-'+player);
+  if (numEl) { numEl.textContent=hp; numEl.style.color=color; }
+  const bar = document.getElementById('hpbar-'+player);
+  if (bar) { bar.style.width=pct+'%'; bar.style.background=color; }
+  const card = document.getElementById('hpcard-'+player);
+  if (card) card.classList.toggle('danger', pct<=25);
+}
+
+function renderPhase() {
+  const arena = document.getElementById('arena');
+  if (!arena) return;
+  const isA = G.turn==='a';
+  const color = G.playerMode === 'single' ? 'var(--gold-dark)' : (isA ? 'var(--blue2)' : 'var(--pink2)');
+  const currentHintsLeft = isA?G.aHintsLeft:G.bHintsLeft;
+
+  if (G.phase==='draw') {
+    // 実力テストで、自分の番がテスト担当者の場合はドローをスキップして直接問題に移行
+    const isTestTurn = G.gamePlayMode === 'test' && (G.playerMode === 'single' || G.turn === G.testChallenger);
+    if (isTestTurn) {
+      setTimeout(() => {
+        // PDF実力テストに沿って次の問題を自動ドロー (0始まりなので turnCount - 1)
+        const nextCard = G.currentPool[(G.turnCount - 1) % 20];
+        doDrawActual(nextCard);
+      }, 50);
+      return;
+    }
+
+    // 通常のドロー画面
+    arena.innerHTML = `
+      <div class="arena-label">DRAW PHASE</div>
+      <div class="draw-3d-wrap" onclick="triggerDraw3D()">
+        <div class="draw-card-btn" id="draw-3d-card">
+          <div class="draw-card-front ${G.playerMode === 'single' ? 'single' : G.turn}">
+            <div class="draw-back-icon">🎴</div>
+            <div class="draw-text">DRAW</div>
+          </div>
+          <div class="draw-card-back">
+            <div style="font-size:40px;text-align:center;color:var(--gold-dark);">❔</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:14px;color:var(--muted);font-weight:bold;margin-top:10px;"><ruby>山札<rt>やまふだ</rt></ruby>をタップしてドロー！</div>`;
+
+  } else if (G.phase==='choose') {
+    // 自身の番がテストモードの場合は読み書きを自動選択して移行
+    const isTestTurn = G.gamePlayMode === 'test' && (G.playerMode === 'single' || G.turn === G.testChallenger);
+    if (isTestTurn) {
+      const isWrite = G.questionFormat === 'write';
+      setTimeout(() => chooseType(isWrite ? 'write' : 'read'), 10);
+      return;
+    }
+    
+    if (G.questionFormat === 'read') {
+      setTimeout(() => chooseType('read'), 10);
+      return;
+    } else if (G.questionFormat === 'write') {
+      setTimeout(() => chooseType('write'), 10);
+      return;
+    }
+
+    // 通常の選択画面
+    const isWord = G.drawn.type==="word";
+    const readDmg = isWord?4:2, writeDmg = isWord?8:4;
+    const typeBadge = isWord?`<div class="card-type-badge">✨ 熟語カード ✨</div>`:'';
+    const extraInfo = isWord?`<span style="color:var(--pink2);font-weight:bold;">【熟語クイズ】高得点を狙おう！</span>`:`<span><ruby>読<rt>よ</rt></ruby>み か <ruby>書<rt>か</rt></ruby>き、どちらにする？</span>`;
+    
+    arena.innerHTML = `
+      <div class="arena-label">CHOOSE TYPE</div>
+      ${typeBadge}
+      <div class="choose-msg"><ruby>カード<rt></rt></ruby>をドローしました！${extraInfo}</div>
+      <div class="type-grid">
+        <button class="type-btn read" onclick="chooseType('read')">
+          <div class="tb-icon">📖</div>
+          <div class="tb-text-group">
+            <span class="tb-name"><ruby>読<rt>よ</rt></ruby>み<ruby>問題<rt>もんだい</rt></ruby></span>
+            <span class="tb-dmg">${G.playerMode==='single' ? '正解でポイント獲得！' : `<ruby>正解<rt>せいかい</rt></ruby>で -${readDmg} ダメージ`}</span>
+          </div>
+        </button>
+        <button class="type-btn write" onclick="chooseType('write')">
+          <div class="tb-icon">✏️</div>
+          <div class="tb-text-group">
+            <span class="tb-name"><ruby>書<rt>か</rt></ruby>き<ruby>問題<rt>もんだい</rt></ruby></span>
+            <span class="tb-dmg">${G.playerMode==='single' ? '高難度！正解でポイント獲得！' : `<ruby>正解<rt>せいかい</rt></ruby>で -${writeDmg} ダメージ${isWord?' ⚡💥':' ⚡'}`}</span>
+          </div>
+        </button>
+      </div>`;
+
+  } else if (G.phase==='read') {
+    // 読みクイズ
+    let optsHtml = G.readOpts.map(opt => {
+      let cls = 'read-opt';
+      if (G.answered !== null) {
+        if (opt === G.drawn.r) cls += ' ok';
+        else if (opt === G.answered) cls += ' ng';
+      }
+      const escapedOpt = opt.replace(/'/g, "\\'");
+      return `<button class="${cls}" ${G.answered !== null ? 'disabled' : ''} onclick="answerRead('${escapedOpt}')">${opt}</button>`;
+    }).join('');
+    
+    let sentenceHtml = '';
+    const cleanK = G.drawn.k.replace(/\[.*?\]/g, ''); // 大[きい] -> 大
+    
+    if (G.drawn.ex) {
+      const filled = G.drawn.ex.replace(cleanK, `<span class="q-word">${cleanK}</span>`);
+      sentenceHtml = `<div class="sentence-panel" style="font-size:18px;">${filled}</div>`;
+    }
+    
+    arena.innerHTML = `
+      <div class="read-q">次の漢字の正しい「読みかた」を選びましょう。</div>
+      <div class="read-kanji-display" style="color:${color}">${G.drawn.k}</div>
+      ${sentenceHtml}
+      <div class="read-options" style="margin-top:14px;">${optsHtml}</div>`;
+
+  } else if (G.phase==='write') {
+    // 書きクイズ
+    if (G.aiEvaluating) {
+      arena.innerHTML = `
+        <div class="ai-loader">
+          <div class="ai-spinner"></div>
+          <div class="ai-eval-title">Gemini AI が漢字を鑑定中... ⚡</div>
+          <div style="font-size: 13px; color: var(--muted); font-weight: bold; max-width: 300px; line-height: 1.6;">
+            あなたの手書き文字のバランスや正誤をAIが解析しています。少しお待ちください。
+          </div>
+        </div>`;
+    } else if (G.aiResult) {
+      const isCorrect = G.aiResult.isCorrect;
+      const verdictClass = isCorrect ? 'correct' : 'incorrect';
+      const verdictLabel = isCorrect ? '⭕ 正解！お見事！' : '❌ もうすこし！';
+      
+      arena.innerHTML = `
+        <div class="ai-eval-panel">
+          <div class="ai-verdict-box ${verdictClass}">
+            <div class="ai-verdict-badge ${verdictClass}">${verdictLabel}</div>
+            <div class="ai-feedback-txt">「${G.drawn.k.replace(/\[.*?\]/g, '')}」のアドバイス:<br>${G.aiResult.feedback}</div>
+            <span class="ai-bottom-msg">※AIの判定が違っている場合は、下の手動ボタンで変更可能です。</span>
+            <div class="judge-btns">
+              <button class="j-ok" onclick="applyAiVerdict(${isCorrect})">🤖 AIの判定通り進む</button>
+              <button class="j-ng" style="border-color: var(--gold); color: var(--gold-dark);" onclick="toggleManualOverride()">✍️ 自分で判定し直す</button>
+            </div>
+          </div>
+        </div>`;
+    } else if (!G.writeDone) {
+      let partsDis=(currentHintsLeft<=0||G.hintAsked)?'disabled':'';
+      let hiraDis=(currentHintsLeft<=0||G.showHira)?'disabled':'';
+      let hintBoxes='';
+      if(G.hintAsked) hintBoxes+=`<div class="hint-box"><span class="hint-title">🧩 意味/使われ方ヒント</span>${formatRuby(G.drawn.h)}</div>`;
+      if(G.showHira) hintBoxes+=`<div class="hint-box"><span class="hint-title">📖 読み方ヒント</span>正解の読みは「<b>${G.drawn.r}</b>」です！</div>`;
+      
+      let sentenceHtml='';
+      if(G.drawn.ex){
+        const cleanK = G.drawn.k.replace(/\[.*?\]/g, '');
+        const blankPlaceholder = "（　　）";
+        const filled = G.drawn.ex.replace(cleanK, `<span class="q-word" style="color:var(--blue2);">${blankPlaceholder}</span>`);
+        sentenceHtml = `<div class="sentence-panel" style="font-size:18px; margin-bottom: 10px;">${filled}</div>`;
+      }
+      
+      arena.innerHTML=`
+        <div class="cvs-wrap" style="gap:10px;">
+          <div class="cvs-prompt">
+            次のことばの下線部の漢字をていねいに手書きしましょう！
+            <span class="reading-big">「${G.drawn.r}」</span>
+          </div>
+          ${sentenceHtml}
+          <canvas id="draw-canvas" width="220" height="220" style="width:220px;height:220px;"></canvas>
+          <div class="cvs-btns">
+            <button class="btn-erase" onclick="clearCanvas()">書き直す</button>
+            <button class="btn-done" onclick="submitWriting()">書けた！</button>
+          </div>
+          <div class="hint-zone">
+            <div class="hint-remain">💡 のこりヒント: <span>${currentHintsLeft}</span> 回</div>
+            <div class="hint-row">
+              <button class="hint-btn" ${partsDis} onclick="hintAsk()">🧩 意味ヒント</button>
+              <button class="hint-btn" ${hiraDis} onclick="hintHira()">📖 読みヒント</button>
+            </div>
+            ${hintBoxes}
+          </div>
+        </div>`;
+      setupCanvas();
+    } else {
+      const cleanK = G.drawn.k.replace(/\[.*?\]/g, '');
+      arena.innerHTML=`
+        <div class="judge-wrap">
+          <div class="judge-title">🧑‍🏫 判定 (お手元の手書きとくらべてね)</div>
+          <div class="judge-kanji">${cleanK}</div>
+          <div class="judge-read">ただしい漢字：${cleanK} （${G.drawn.r}）</div>
+          <div class="judge-btns">
+            <button class="j-ok" onclick="judgeWrite(true)">⭕ 正しく書けた！</button>
+            <button class="j-ng" onclick="judgeWrite(false)">❌ もうすこし</button>
+          </div>
+        </div>`;
+    }
+
+  } else if (G.phase==='end') {
+    let hitClass=G.lastDmg>0?'hit':'miss';
+    let msg=(G.endMsg||'').split('\n').join('<br>');
+    let isEndGame = false;
+    
+    if (G.gamePlayMode === 'test') {
+      if (G.playerMode === 'single') {
+        if (G.turnCount >= 20) isEndGame = true;
+      } else {
+        // 2人プレイ対戦時は誰かがHP0になるまで、または全問(20問)消化で終了
+        if (G.winner || G.turnCount > 20) isEndGame = true;
+      }
+    } else {
+      if (G.playerMode === 'single' && G.turnCount >= G.maxHp) {
+        isEndGame = true;
+      } else if (G.playerMode === 'multi' && G.winner) {
+        isEndGame = true;
+      }
+    }
+    
+    let btn=isEndGame ? `🏆 結果発表へ！` : '次 の 問題 へ →';
+    const cleanK = G.drawn.k.replace(/\[.*?\]/g, '');
+    arena.innerHTML=`
+      <div class="end-wrap">
+        <div class="end-msg ${hitClass}">${msg}</div>
+        <div class="end-learn">「<span class="hl">${cleanK}</span>」のまとめ<br>読み：<span class="hl">${G.drawn.r}</span><br>いみ：${formatRuby(G.drawn.h)}</div>
+        <button class="next-btn" onclick="endTurn()">${btn}</button>
+      </div>`;
+  }
+}
+
+// ===================== アクション =====================
+function triggerDraw3D() {
+  const card = document.getElementById('draw-3d-card');
+  if (!card||card.classList.contains('flipped')) return;
+  BGM.se('draw');
+  
+  if (G.currentPool.length===0) G.currentPool=compileDeck(G.grade, G.questionMode);
+  const idx=Math.floor(Math.random()*G.currentPool.length);
+  const nextCard=G.currentPool[idx];
+  
+  card.classList.add('flipped');
+  setTimeout(()=>doDrawActual(nextCard), 500);
+}
+
+function doDrawActual(nextCard) {
+  G.drawn=nextCard; 
+  G.phase='choose'; 
+  G.answered=null;
+  G.hintAsked=false; 
+  G.showHira=false; 
+  G.writeDone=false;
+  G.aiEvaluating=false; 
+  G.aiResult=null;
+  updateGameUI();
+}
+
+function chooseType(type) {
+  if(type==='read'){ 
+    G.readOpts=genOpts(G.drawn.r, G.grade); 
+    G.phase='read'; 
+  } else { 
+    G.phase='write'; 
+  }
+  updateGameUI();
+}
+
+function answerRead(ans) {
+  if(G.answered!==null)return;
+  G.answered=ans;
+  const ok=ans===G.drawn.r;
+  BGM.se(ok?'correct':'wrong');
+  
+  // テスト挑戦者の場合のみ履歴に保存
+  const isChallengerTurn = G.gamePlayMode === 'test' && (G.playerMode === 'single' || G.turn === G.testChallenger);
+  if (isChallengerTurn) {
+    G.testHistory.push({index: G.turnCount, k: G.drawn.k, r: G.drawn.r, ok: ok});
+    if (ok) G.singleCorrectCount++;
+  }
+  
+  if (G.gamePlayMode === 'test') {
+    if (G.playerMode === 'single') {
+      finishQuiz(ok?1:0, ok?`正解！完璧です！✨`:`ざんねん！正解は「${G.drawn.r}」でした。`);
+    } else {
+      // 2人プレイ時
+      if (G.turn === G.testChallenger) {
+        // テスト側：正解で相手にダメージ
+        const dmg = 4;
+        finishQuiz(ok?dmg:0, ok?`テスト正解！相手に -${dmg} ダメージ！` : `ざんねん！はずれ！正解は「${G.drawn.r}」でした。`);
+      } else {
+        // バトル側
+        const dmg = 2;
+        finishQuiz(ok?dmg:0, ok?`正解！相手に -${dmg} ダメージ！` : `ざんねん！はずれ！ダメージなし…`);
+      }
+    }
+  } else {
+    // 通常バトル
+    if (G.playerMode === 'single') {
+      if (ok) G.singleCorrectCount++;
+      finishQuiz(ok?1:0, ok?`正解！お見事！✨`:`ざんねん！はずれ！`);
+    } else {
+      const dmg = 4;
+      finishQuiz(ok?dmg:0, ok?`正解！相手に -${dmg} ダメージ！` : `ざんねん！はずれ！ダメージなし…`);
+    }
+  }
+}
+
+// ===================== Gemini AI 手書き判定 =====================
+async function submitWriting() {
+  const canvas = document.getElementById('draw-canvas');
+  if (!canvas) {
+    G.writeDone = true;
+    updateGameUI();
+    return;
+  }
+  
+  const ctx = canvas.getContext('2d');
+  const buffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+  const isCanvasBlank = !buffer.some(color => color !== 0);
+  
+  if (isCanvasBlank) {
+    G.writeDone = true;
+    updateGameUI();
+    return;
+  }
+  
+  G.aiEvaluating = true;
+  updateGameUI();
+  
+  const base64Data = canvas.toDataURL('image/png').split(',')[1];
+  const cleanK = G.drawn.k.replace(/\[.*?\]/g, ''); // 大[きい] -> 大
+  
+  try {
+    const aiResult = await callGeminiVision(base64Data, cleanK, G.drawn.r, G.drawn.h);
+    G.aiResult = aiResult;
+  } catch (err) {
+    console.error("AI 判定でエラーが発生したため、自己申告判定へ移行します:", err);
+    G.aiResult = null;
+    G.writeDone = true;
+  } finally {
+    G.aiEvaluating = false;
+    updateGameUI();
+  }
+}
+
+async function callGeminiVision(base64Image, targetKanji, reading, meaning) {
+  const apiKey = ""; 
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+  
+  const systemInstruction = "あなたは日本の学校のとても丁寧な漢字の先生です。提示された手書き文字がお題の漢字を正確に、綺麗に書けているかを一文字ずつ丁寧に判定し、アドバイスを伝えてください。";
+  const promptText = `お題の漢字:「${targetKanji}」(読み方:「${reading}」、意味:「${meaning}」)。
+画像は、プレイヤーがこのお題を手書きしたものです。
+この手書き文字がお題の「${targetKanji}」として正しく書けているかを判定してください。
+判定は必ず次のJSON形式で、キー「isCorrect」と「feedback」を含めて出力してください：
+{
+  "isCorrect": trueまたはfalse,
+  "feedback": "文字のバランス、トメ・ハネ・ハライの良さ、直すべき箇所などを子ども向けに褒めつつ指導する2行程度の優しいアドバイス(日本語)"
+}`;
+
+  const payload = {
+    contents: [{
+      role: "user",
+      parts: [
+        { text: promptText },
+        { inlineData: { mimeType: "image/png", data: base64Image } }
+      ]
+    }],
+    systemInstruction: { parts: [{ text: systemInstruction }] },
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: "OBJECT",
+        properties: {
+          isCorrect: { type: "BOOLEAN" },
+          feedback: { type: "STRING" }
+        },
+        required: ["isCorrect", "feedback"]
+      }
+    }
+  };
+
+  let delay = 1000;
+  for (let i = 0; i < 5; i++) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+      const result = await response.json();
+      const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (textResponse) {
+        return JSON.parse(textResponse);
+      }
+    } catch (e) {
+      if (i === 4) throw e;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay *= 2;
+    }
+  }
+  throw new Error("API接続エラー");
+}
+
+function applyAiVerdict(isCorrect) {
+  const feedback = G.aiResult ? G.aiResult.feedback : "";
+  G.aiResult = null;
+  G.writeDone = false;
+  
+  BGM.se(isCorrect ? 'correct' : 'wrong');
+  
+  const isChallengerTurn = G.gamePlayMode === 'test' && (G.playerMode === 'single' || G.turn === G.testChallenger);
+  if (isChallengerTurn) {
+    G.testHistory.push({index: G.turnCount, k: G.drawn.k, r: G.drawn.r, ok: isCorrect});
+    if (isCorrect) G.singleCorrectCount++;
+  }
+  
+  if (G.gamePlayMode === 'test') {
+    if (G.playerMode === 'single') {
+      finishQuiz(isCorrect?1:0, isCorrect ? `AI判定：合格！🌟\n「${feedback}」` : `AI判定：もうすこし！💦\n「${feedback}」`);
+    } else {
+      if (G.turn === G.testChallenger) {
+        const dmg = 8;
+        finishQuiz(isCorrect?dmg:0, isCorrect ? `テスト正解！相手に -${dmg} 大ダメージ！⚡💥\n「${feedback}」` : `AI判定：不合格！ダメージなし…\n「${feedback}」`);
+      } else {
+        const dmg = 4;
+        finishQuiz(isCorrect?dmg:0, isCorrect ? `正解！相手に -${dmg} ダメージ！⚡\n「${feedback}」` : `AI判定：不合格！ダメージなし…\n「${feedback}」`);
+      }
+    }
+  } else {
+    if (G.playerMode === 'single') {
+      finishQuiz(isCorrect?1:0, isCorrect ? `AI判定：合格！🌟\n「${feedback}」` : `AI判定：不合格！💦\n「${feedback}」`);
+    } else {
+      const dmg = 8;
+      finishQuiz(isCorrect?dmg:0, isCorrect ? `AI判定：完璧！相手に -${dmg} ダメージ！⚡💥\n「${feedback}」` : `AI判定：もうすこし！ダメージなし…\n「${feedback}」`);
+    }
+  }
+}
+
+function toggleManualOverride() {
+  G.aiResult = null;
+  G.writeDone = true;
+  updateGameUI();
+}
+
+function judgeWrite(isOk) {
+  G.writeDone=false;
+  BGM.se(isOk?'correct':'wrong');
+  
+  const isChallengerTurn = G.gamePlayMode === 'test' && (G.playerMode === 'single' || G.turn === G.testChallenger);
+  if (isChallengerTurn) {
+    G.testHistory.push({index: G.turnCount, k: G.drawn.k, r: G.drawn.r, ok: isOk});
+    if (isOk) G.singleCorrectCount++;
+  }
+  
+  if (G.gamePlayMode === 'test') {
+    if (G.playerMode === 'single') {
+      finishQuiz(isOk?1:0, isOk?`手動判定：正解！おめでとうございます！✍️`:`手動判定：不合格！次はがんばろう！`);
+    } else {
+      if (G.turn === G.testChallenger) {
+        const dmg = 8;
+        finishQuiz(isOk?dmg:0, isOk?`テスト合格！相手に -${dmg} ダメージ！⚡` : `手動判定：不合格！ダメージなし…`);
+      } else {
+        const dmg = 4;
+        finishQuiz(isOk?dmg:0, isOk?`正解！相手に -${dmg} ダメージ！⚡` : `手動判定：不合格！ダメージなし…`);
+      }
+    }
+  } else {
+    if (G.playerMode === 'single') {
+      finishQuiz(isOk?1:0, isOk?`素晴らしい！書き取り大成功！✍️`:`ざんねん！次は書けるようにしよう！`);
+    } else {
+      const dmg=8;
+      finishQuiz(isOk?dmg:0, isOk?`お見事！大正解！相手に -${dmg} ダメージ！⚡` : `ざんねん！書けなかった！ダメージなし…`);
+    }
+  }
+}
+
+function finishQuiz(dmg, msg) {
+  G.lastDmg=dmg; 
+  G.endMsg=msg;
+  
+  if (G.playerMode === 'multi') {
+    if(dmg>0){
+      BGM.se('damage'); 
+      showDmgPopup(dmg);
+      if(dmg>=8){
+        const s=document.getElementById('screen-game');
+        if(s){s.classList.add('shake-screen');setTimeout(()=>s.classList.remove('shake-screen'),500);}
+      }
+      if(G.turn==='a'){G.bHp=Math.max(0,G.bHp-dmg);if(G.bHp<=0)G.winner=G.aName;}
+      else{G.aHp=Math.max(0,G.aHp-dmg);if(G.aHp<=0)G.winner=G.bName;}
+    }
+  } else {
+    updateHP('a');
+    if (dmg > 0) BGM.se('damage');
+  }
+  
+  G.phase='end'; 
+  updateGameUI();
+}
+
+function hintAsk() {
+  const isA=G.turn==='a';
+  if((isA?G.aHintsLeft:G.bHintsLeft)<=0||G.hintAsked)return;
+  if(isA)G.aHintsLeft--;else G.bHintsLeft--;
+  G.hintAsked=true; 
+  updateGameUI();
+}
+
+function hintHira() {
+  const isA=G.turn==='a';
+  if((isA?G.aHintsLeft:G.bHintsLeft)<=0||G.showHira)return;
+  if(isA)G.aHintsLeft--;else G.bHintsLeft--;
+  G.showHira=true; 
+  updateGameUI();
+}
+
+function endTurn() {
+  // テストの終了判定。テスト担当者が20問を終えた時
+  const isEndGame = G.gamePlayMode === 'test' 
+    ? (G.playerMode === 'single' ? G.turnCount >= 20 : (G.winner || G.turnCount > 20)) 
+    : (G.playerMode === 'single' && G.turnCount >= G.maxHp);
+  
+  if (isEndGame) {
+    G.singleTotalTimeSec = Math.floor((Date.now() - G.singleStartTime) / 1000);
+    BGM.play('win');
+    
+    const totalQuestions = G.testHistory.length || 20;
+    const rate = Math.round((G.singleCorrectCount / totalQuestions) * 100);
+    const wt = document.getElementById('winner-txt');
+    
+    if (G.gamePlayMode === 'test') {
+      if (G.playerMode === 'single') {
+        wt.innerHTML = `${G.aName} テスト完了！🏆`;
+      } else {
+        const challengerName = G.testChallenger === 'a' ? G.aName : G.bName;
+        wt.innerHTML = G.winner ? `${G.winner} の勝利！🏆` : `対局＆テスト完了！🏆`;
+      }
+    } else {
+      wt.innerHTML = G.winner ? `${G.winner} の勝利！🏆` : `チャレンジ終了！🏆`;
+    }
+    
+    let rank = '漢字ビギナー級';
+    if (rate === 100) rank = '完全無欠の漢字マスター👑';
+    else if (rate >= 90) rank = 'きわめし漢字大将軍見習い✨';
+    else if (rate >= 70) rank = '秀才漢字ソルジャー🔥';
+    else if (rate >= 50) rank = '一人前の漢字使い⚔️';
+    
+    let summaryHtml = '';
+    if (G.testHistory.length > 0) {
+      summaryHtml = '<div class="test-summary-grid">';
+      G.testHistory.forEach(item => {
+        const displayK = item.k.replace(/\[.*?\]/g, '');
+        summaryHtml += `
+          <div class="test-summary-item ${item.ok ? 'ok' : 'ng'}">
+            ①${displayK}<br>${item.ok ? '⭕' : '❌'}
+          </div>
+        `;
+      });
+      summaryHtml += '</div>';
+    }
+
+    const ri = document.getElementById('res-info');
+    if (ri) {
+      if (G.gamePlayMode === 'test') {
+        const typeStr = G.questionFormat === 'write' ? '書き取りテスト' : '読みかたテスト';
+        const challengerName = G.playerMode === 'single' ? G.aName : (G.testChallenger === 'a' ? G.aName : G.bName);
+        ri.innerHTML = `
+          <div style="font-weight:900;font-size:18px;color:var(--blue2);margin-bottom:10px;">
+            ${G.grade}年生 ${typeStr} 結果
+          </div>
+          挑戦者：<b>${challengerName}</b><br>
+          正解数：<span style="color:var(--gold-dark);font-size:26px;">${G.singleCorrectCount}</span> / ${totalQuestions} 問<br>
+          正解率：<span style="color:var(--blue2);font-size:26px;">${rate}%</span><br>
+          解答時間：<b>${G.singleTotalTimeSec}秒</b><br>
+          称号：<span style="color:var(--pink2);font-weight:bold;">${rank}</span>
+          ${summaryHtml ? `
+            <div style="margin-top:14px;font-size:12px;color:var(--muted);text-align:left;border-top:1px solid #e2e8f0;padding-top:8px;">
+              <b>テスト解答履歴一覧:</b>
+              ${summaryHtml}
+            </div>
+          ` : ''}
+        `;
+      } else {
+        ri.innerHTML = `
+          ${G.turnCount} ターン目で決着！<br>
+          ${G.aName} のこり体力: ${G.aHp} HP<br>
+          ${G.bName} のこり体力: ${G.bHp} HP
+        `;
+      }
+    }
+    showScreen('result');
+    return;
+  }
+  
+  if (G.gamePlayMode !== 'test' && G.winner) {
+    BGM.play('win');
+    const wt=document.getElementById('winner-txt');
+    if(wt)wt.innerHTML=G.winner+' の勝利！';
+    const ri=document.getElementById('res-info');
+    if(ri)ri.innerHTML=`${G.turnCount} ターン目で決着！<br>${G.aName} のこり体力: ${G.aHp} HP<br>${G.bName} のこり体力: ${G.bHp} HP`;
+    document.body.classList.remove('danger-flash');
+    showScreen('result'); 
+    return;
+  }
+  
+  // シングルプレイまたはターン交代
+  if (G.playerMode === 'single') {
+    G.turnCount++;
+  } else {
+    if (G.turn === 'b') {
+      G.turnCount++;
+    }
+    G.turn = G.turn==='a'?'b':'a';
+  }
+  
+  G.phase='draw'; 
+  G.drawn=null; 
+  G.answered=null;
+  G.hintAsked=false; 
+  G.showHira=false; 
+  G.writeDone=false; 
+  G.aiEvaluating=false;
+  G.aiResult=null;
+  G.endMsg='';
+  updateGameUI();
+}
+
+function showDmgPopup(dmg) {
+  const popup=document.createElement('div');
+  popup.className='dmg-popup';
+  popup.style.color=G.turn==='a'?'#3b8ef3':'#db2777';
+  popup.textContent='-'+dmg+(dmg>=8?'⚡💥':dmg>=4?'💥':'');
+  document.body.appendChild(popup);
+  setTimeout(()=>{if(popup.parentNode)popup.parentNode.removeChild(popup);},900);
+}
+
+// ===================== キャンバス（手書き描画） =====================
+function setupCanvas() {
+  const canvas=document.getElementById('draw-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr; canvas.height=rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  G.isDrawing=false; 
+  G.lastPos=null;
+
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    if(e.touches && e.touches.length>0){
+      return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+    }
+    return{x:e.clientX-r.left,y:e.clientY-r.top};
+  }
+
+  function draw(e){
+    if(!G.isDrawing)return;
+    const p=getPos(e);
+    ctx.strokeStyle='#1e293b'; ctx.lineWidth=6; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(G.lastPos.x,G.lastPos.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+    G.lastPos=p;
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    G.isDrawing = true;
+    G.lastPos = getPos(e);
+    try {
+      canvas.setPointerCapture(e.pointerId);
+    } catch(err) {}
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    if(!G.isDrawing) return;
+    e.preventDefault();
+    draw(e);
+  });
+
+  canvas.addEventListener('pointerup', e => {
+    e.preventDefault();
+    G.isDrawing = false;
+    try {
+      canvas.releasePointerCapture(e.pointerId);
+    } catch(err) {}
+  });
+
+  canvas.addEventListener('pointercancel', () => {
+    G.isDrawing = false;
+  });
+}
+
+function clearCanvas() {
+  const canvas=document.getElementById('draw-canvas');
+  if(canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  // デフォルトは1人プレイ・実力テストモードに設定
+  selectPlayerMode('single');
+  selectGamePlayMode('test');
+});
+</script>
+</body>
+</html>
