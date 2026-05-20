@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>漢字バトル - 煌めく知のカードゲーム & テスト</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3f6fa;
+  --panel: #ffffff;
+  --border: #d1d9e6;
+  --gold: #f59e0b;
+  --gold-dark: #d97706;
+  --blue: #3b8ef3;
+  --blue2: #2563eb;
+  --blue-bg: rgba(59, 142, 243, 0.1);
+  --pink: #f472b6;
+  --pink2: #db2777;
+  --pink-bg: rgba(244, 114, 182, 0.1);
+  --green: #10b981;
+  --green-dark: #059669;
+  --red: #ef4444;
+  --text: #1e293b;
+  --muted: #64748b;
+  --muted2: #94a3b8;
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+*, *::before, *::after {
+  box-sizing: border-box; margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 142, 243, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(244, 114, 182, 0.06) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(245, 158, 11, 0.04) 0px, transparent 50%);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh; overflow-x: hidden; position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(59, 142, 243, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 142, 243, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px; pointer-events: none; z-index: 0;
+}
+.screen { position: relative; z-index: 1; display: none; min-height: 100vh; width: 100%; }
+.screen.active { display: flex; }
+ruby { ruby-position: over; }
+ruby rt {
+  font-family: 'Noto Sans JP', sans-serif; font-size: 0.45em; font-weight: bold;
+  letter-spacing: 0.5px; color: var(--muted); padding-bottom: 1px;
+}
+
+/* ===== TITLE ===== */
+#screen-title { align-items: center; justify-content: center; padding: 24px; }
+.title-box { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 440px; width: 100%; }
+.title-cards { font-size: 90px; margin-bottom: 8px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.1)); }
+.title-main {
+  font-family: 'Dela Gothic One', cursive; font-size: 48px; letter-spacing: 2px; line-height: 1.2; margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--pink2) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 6px rgba(245, 158, 11, 0.2));
+}
+.title-sub { font-size: 12px; font-weight: 900; letter-spacing: 6px; color: var(--muted); text-transform: uppercase; margin-bottom: 40px; }
+.title-deco { display: flex; gap: 16px; margin-bottom: 44px; }
+.title-deco-card {
+  width: 64px; height: 88px; border-radius: 16px; border: 2px solid;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: 'Dela Gothic One', cursive; font-size: 28px;
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08); background: rgba(255, 255, 255, 0.85);
+  position: relative; overflow: hidden;
+}
+.title-deco-card::before {
+  content: ''; position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4), transparent 70%); transform: rotate(15deg);
+}
+.title-deco-card:nth-child(1) { border-color: rgba(16,185,129,0.4); color: var(--green); box-shadow: 0 6px 15px rgba(16,185,129,0.1); transform: rotate(-3deg); }
+.title-deco-card:nth-child(2) { border-color: rgba(239,68,68,0.4); color: var(--red); box-shadow: 0 6px 15px rgba(239,68,68,0.1); transform: translateY(-4px) rotate(1deg); }
+.title-deco-card:nth-child(3) { border-color: rgba(59,142,243,0.4); color: var(--blue); box-shadow: 0 6px 15px rgba(59,142,243,0.1); transform: translateY(-2px) rotate(-1.5deg); }
+.title-deco-card:nth-child(4) { border-color: rgba(245,158,11,0.4); color: var(--gold); box-shadow: 0 6px 15px rgba(245,158,11,0.1); transform: translateY(2px) rotate(3deg); }
+.title-start-btn {
+  padding: 18px 56px; border-radius: 30px; border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #fff;
+  font-family: 'Dela Gothic One', cursive; font-size: 24px; letter-spacing: 4px;
+  cursor: pointer; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 24px;
+}
+.title-start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(245,158,11,0.45); }
+.title-start-btn:active { transform: scale(0.96); }
+.title-hint { font-size: 12px; color: var(--muted); font-weight: bold; }
+
+/* ===== SETUP ===== */
+#screen-setup { align-items: center; justify-content: center; padding: 20px; }
+.setup-box {
+  background: var(--panel); border: 1px solid #fff; border-radius: 32px;
+  padding: 32px 24px; max-width: 480px; width: 100%; box-shadow: var(--shadow-lg);
+  max-height: 90vh; overflow-y: auto;
+}
+.setup-box::-webkit-scrollbar { width: 6px; }
+.setup-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+.setup-logo { font-family: 'Dela Gothic One', cursive; font-size: 22px; text-align: center; color: var(--text); letter-spacing: 2px; margin-bottom: 24px; }
+.s-label { font-size: 11px; font-weight: 900; letter-spacing: 1px; color: var(--muted); display: block; margin-top: 12px; margin-bottom: 8px; }
+.s-label:first-of-type { margin-top: 0; }
+.grade-row, .three-btn-row, .mode-row { display: grid; gap: 8px; margin-bottom: 12px; }
+.grade-row { grid-template-columns: repeat(5, 1fr); }
+.mode-row { grid-template-columns: 1fr 1fr; }
+.three-btn-row { grid-template-columns: 1fr 1fr 1fr; }
+.g-btn, .mode-btn {
+  padding: 10px 4px; border-radius: 14px; border: 2px solid var(--border); background: #fff;
+  color: var(--muted); font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 12px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.g-btn:hover, .mode-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+.g-btn.on, .mode-btn.on { background: rgba(245,158,11,0.08); border-color: var(--gold); color: var(--gold-dark); box-shadow: 0 3px 8px rgba(245,158,11,0.1); }
+.name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.name-grid.single-player { grid-template-columns: 1fr; }
+.n-wrap { display: flex; flex-direction: column; gap: 6px; }
+.n-badge { display: inline-block; padding: 4px 12px; border-radius: 10px; font-family: 'Dela Gothic One', cursive; font-size: 12px; text-align: center; }
+.n-badge.a { background: var(--blue-bg); color: var(--blue2); }
+.n-badge.b { background: var(--pink-bg); color: var(--pink2); }
+.n-input {
+  width: 100%; background: #f8fafc; border: 2px solid var(--border); border-radius: 14px;
+  padding: 12px; color: var(--text); font-family: 'Noto Sans JP', sans-serif;
+  font-weight: bold; font-size: 13px; outline: none; transition: all 0.2s;
+}
+.n-input.a:focus { border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(59, 142, 243, 0.1); }
+.n-input.b:focus { border-color: var(--pink); background: #fff; box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.1); }
+.hp-area { margin-bottom: 12px; background: #f8fafc; padding: 14px; border-radius: 20px; border: 1px solid var(--border); }
+.hp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.hp-mode-badge {
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 11px;
+  padding: 4px 12px; border-radius: 20px; color: #fff; background: var(--blue);
+  box-shadow: 0 3px 8px rgba(59, 142, 243, 0.15); transition: all 0.2s;
+}
+.hp-mode-badge.standard { background: var(--blue); box-shadow: 0 3px 8px rgba(59, 142, 243, 0.15); }
+.hp-mode-badge.endless { background: #8b5cf6; box-shadow: 0 3px 8px rgba(139, 92, 246, 0.15); }
+.hp-val { font-family: 'Dela Gothic One', cursive; font-size: 26px; color: var(--text); line-height: 1; }
+.hp-slider-wrap { position: relative; padding: 6px 0; }
+.hp-marks { display: grid; grid-template-columns: repeat(10, 1fr); text-align: center; margin-top: 8px; }
+.hp-marks.q-marks { grid-template-columns: repeat(5, 1fr); }
+.hp-mark-item { font-size: 10px; font-weight: 700; color: var(--muted2); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hp-mark-item::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+.hp-mark-item.active { color: var(--gold-dark); }
+.hp-mark-item.active::before { background: var(--gold); }
+.rule-panel {
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 18px;
+  padding: 14px; font-size: 12px; line-height: 1.8; color: var(--text);
+  margin-bottom: 16px; font-weight: bold;
+}
+.rule-panel b { color: var(--blue2); }
+.rule-panel .dmg-txt { color: var(--red); }
+.setup-btns { display: flex; gap: 12px; margin-top: 12px; }
+.start-btn {
+  flex: 1; padding: 16px; border-radius: 20px; border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: white;
+  font-family: 'Dela Gothic One', cursive; font-size: 16px; letter-spacing: 2px;
+  cursor: pointer; box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25); transition: transform 0.15s;
+}
+.start-btn:active { transform: scale(0.96); }
+.back-btn {
+  padding: 16px 20px; border-radius: 20px; border: 2px solid var(--border);
+  background: transparent; color: var(--muted); font-family: 'Dela Gothic One', cursive;
+  font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.back-btn:hover { background: #f8fafc; color: var(--text); }
+
+/* ===== GAME ===== */
+#screen-game { flex-direction: column; padding: 16px 12px; gap: 12px; }
+.shake-screen { animation: shakeEffect 0.5s ease-in-out; }
+@keyframes shakeEffect {
+  0%,100%{transform:translate(0,0)} 10%,30%,50%,70%,90%{transform:translate(-6px,3px)} 20%,40%,60%,80%{transform:translate(6px,-3px)}
+}
+.game-inner { max-width: 540px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.g-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.turn-pill {
+  font-family: 'Dela Gothic One', cursive; font-size: 13px; letter-spacing: 1px;
+  padding: 8px 18px; border-radius: 30px; box-shadow: var(--shadow-sm); background: #fff; border: 2px solid;
+}
+.turn-pill.a { color: var(--blue2); border-color: var(--blue); }
+.turn-pill.b { color: var(--pink2); border-color: var(--pink); }
+.turn-pill.single { color: var(--gold-dark); border-color: var(--gold); }
+.t-count { font-size: 13px; font-weight: 900; color: var(--muted); }
+.cfg-btn { padding: 8px 16px; border-radius: 12px; border: 2px solid var(--border); background: #fff; color: var(--muted); font-size: 12px; cursor: pointer; font-weight: bold; }
+.hp-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+.hp-row.single-player { grid-template-columns: 1fr; }
+.hp-card { background: var(--panel); border: 2px solid var(--border); border-radius: 20px; padding: 14px; box-shadow: var(--shadow-sm); transition: all 0.3s; }
+.hp-card.a { border-color: rgba(59, 142, 243, 0.3); }
+.hp-card.b { border-color: rgba(244, 114, 182, 0.3); }
+.hp-card.single { border-color: rgba(245, 158, 11, 0.3); }
+.hp-card.danger { animation: dangerPulse 0.8s ease-in-out infinite; }
+@keyframes dangerPulse {
+  0%,100%{box-shadow:0 0 0 rgba(239, 68, 68, 0);border-color:rgba(239, 68, 68, 0.3)}
+  50%{box-shadow:0 0 20px rgba(239, 68, 68, 0.4);border-color:var(--red)}
+}
+.hc-name { font-size: 12px; font-weight: 900; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-num { font-family: 'Dela Gothic One', cursive; font-size: 28px; line-height: 1.1; }
+.hc-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+.hc-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.vs-txt { font-family: 'Dela Gothic One', cursive; font-size: 20px; color: var(--muted); }
+.arena {
+  background: var(--panel); border: 2px solid var(--border); border-radius: 28px;
+  padding: 28px 20px; min-height: 450px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; box-shadow: var(--shadow-md); position: relative;
+}
+.arena-label { font-size: 11px; font-weight: 900; letter-spacing: 4px; color: var(--muted2); text-transform: uppercase; }
+.draw-3d-wrap { width: 150px; height: 200px; perspective: 1000px; cursor: pointer; will-change: transform; }
+.draw-card-btn {
+  width: 100%; height: 100%; border-radius: 20px; position: relative; transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); background: none; border: none; will-change: transform;
+}
+.draw-card-btn.flipped { transform: rotateY(180deg); }
+.draw-card-front, .draw-card-back {
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md); border: 3px solid #fff;
+}
+.draw-card-front {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); position: relative; overflow: hidden;
+}
+.draw-card-front::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.8) 50%, transparent 60%);
+  background-size: 200% 200%; animation: shineCard 3s infinite linear;
+}
+@keyframes shineCard { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.draw-card-front.a { border-color: var(--blue); }
+.draw-card-front.b { border-color: var(--pink); }
+.draw-card-front.single { border-color: var(--gold); }
+.draw-card-back { transform: rotateY(180deg); background: #fff; border-color: var(--gold); }
+.draw-back-icon { font-size: 56px; margin-bottom: 8px; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)); }
+.draw-text { font-family: 'Dela Gothic One', cursive; font-size: 14px; letter-spacing: 2px; color: var(--muted); }
+.card-type-badge {
+  font-family: 'Dela Gothic One', cursive; font-size: 12px; color: #fff;
+  background: linear-gradient(90deg, var(--gold-dark), var(--pink2));
+  padding: 6px 14px; border-radius: 12px; box-shadow: var(--shadow-sm); z-index: 10;
+}
+.choose-msg {
+  font-size: 15px; font-weight: bold; color: var(--text); text-align: center; line-height: 1.8;
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; width: 100%;
+}
+.choose-msg span { color: var(--gold-dark); font-size: 13px; display: block; margin-top: 6px; }
+.type-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.type-btn {
+  padding: 24px 20px; border-radius: 20px; border: 3px solid; background: #fff;
+  cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 16px; box-shadow: var(--shadow-sm);
+}
+.type-btn:active { transform: scale(0.97); }
+.type-btn.read { border-color: rgba(59, 142, 243, 0.3); color: var(--blue2); }
+.type-btn.read:hover { background: var(--blue-bg); border-color: var(--blue); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.type-btn.write { border-color: rgba(245, 158, 11, 0.3); color: var(--gold-dark); }
+.type-btn.write:hover { background: rgba(245, 158, 11, 0.1); border-color: var(--gold); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.tb-icon { font-size: 40px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); }
+.tb-text-group { display: flex; flex-direction: column; align-items: flex-start; }
+.tb-name { font-family: 'Dela Gothic One', cursive; font-size: 24px; line-height: 1.2; }
+.tb-dmg { font-size: 13px; font-weight: bold; opacity: 0.9; margin-top: 4px; }
+.sentence-panel {
+  background: #f8fafc; border: 2px solid var(--border); border-radius: 16px;
+  padding: 16px 20px; font-size: 16px; line-height: 1.8; color: var(--text); text-align: center; width: 100%; font-weight: bold;
+}
+.sentence-panel .q-word { color: var(--gold-dark); font-family: 'Dela Gothic One', cursive; font-size: 22px; border-bottom: 3px dashed var(--gold); padding: 0 4px; margin: 0 4px; }
+.word-meaning-box {
+  width: 100%; background: rgba(245, 158, 11, 0.08); border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 16px; padding: 14px 18px; font-size: 15px; line-height: 2.2; color: var(--text); text-align: center; font-weight: bold;
+}
+.meaning-title-mini { font-size: 11px; color: var(--gold-dark); letter-spacing: 1px; display: block; margin-bottom: 6px; text-transform: uppercase; }
+.read-q { font-size: 15px; font-weight: bold; color: var(--muted); text-align: center; }
+.read-kanji-display {
+  font-family: 'Dela Gothic One', cursive; font-size: 80px; line-height: 1.2; color: var(--text);
+  text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1); animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; margin: 12px 0;
+}
+@keyframes scaleIn { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+.read-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.read-opt {
+  padding: 18px 10px; border-radius: 16px; border: 2px solid var(--border); background: #fff;
+  color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 20px; font-weight: 900;
+  text-align: center; cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow-sm);
+}
+.read-opt:not(:disabled):hover { border-color: var(--blue2); background: var(--blue-bg); transform: translateY(-2px); }
+.read-opt.ok { border-color: var(--green)!important; background: rgba(16, 185, 129, 0.1)!important; color: var(--green)!important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+.read-opt.ng { border-color: var(--red)!important; background: rgba(239, 68, 68, 0.08)!important; color: var(--red)!important; }
+
+/* キーボード文字入力回答エリア */
+.read-text-input-wrap { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; align-items: center; }
+.read-keyboard-input {
+  width: 100%; padding: 16px; font-size: 20px; font-weight: bold; text-align: center;
+  border: 3px solid var(--blue); border-radius: 16px; outline: none; background: #fff;
+  box-shadow: var(--shadow-sm); transition: all 0.2s;
+}
+.read-keyboard-input:focus { box-shadow: 0 0 0 4px rgba(59, 142, 243, 0.2); }
+.read-keyboard-submit {
+  width: 100%; padding: 14px; border-radius: 16px; border: none;
+  background: linear-gradient(135deg, var(--blue), var(--blue2)); color: #fff;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 16px; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.15s;
+}
+.read-keyboard-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+
+.cvs-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.cvs-prompt { text-align: center; line-height: 1.8; font-size: 14px; color: var(--muted); font-weight: bold; }
+.reading-big { display: block; font-family: 'Dela Gothic One', cursive; font-size: 38px; color: var(--gold-dark); margin-top: 4px; }
+#draw-canvas {
+  border: 3px solid var(--gold); border-radius: 24px; background: #fdfdfd;
+  cursor: crosshair; touch-action: none;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05), var(--shadow-md); display: block;
+}
+.cvs-btns { display: flex; gap: 12px; width: 100%; max-width: 260px; }
+.btn-erase {
+  flex: 1; padding: 12px; border-radius: 14px; border: 2px solid var(--border); background: #fff; color: var(--muted);
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; cursor: pointer; transition: all 0.2s;
+}
+.btn-erase:hover { border-color: var(--red); color: var(--red); background: #fff5f5; }
+.btn-done {
+  flex: 1.2; padding: 12px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, var(--blue2), #3b82f6); color: white;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 16px; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); transition: all 0.2s;
+}
+.btn-done:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+.hint-zone { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.hint-remain { font-size: 12px; font-weight: bold; color: var(--muted); }
+.hint-remain span { color: var(--gold-dark); font-weight: 900; font-size: 16px; margin: 0 4px; }
+.hint-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.hint-btn {
+  padding: 10px 16px; border-radius: 12px; border: 2px dashed var(--gold); background: #fff; color: var(--gold-dark);
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 900; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.hint-btn:disabled { opacity: 0.3; cursor: not-allowed; border-style: solid; background: #f1f5f9; }
+.hint-box {
+  background: #fff; border: 2px solid var(--gold); border-radius: 16px; padding: 14px 20px;
+  font-size: 14px; color: var(--text); text-align: center; line-height: 1.8; width: 100%;
+  font-weight: bold; box-shadow: var(--shadow-sm); animation: fadeIn 0.2s ease;
+}
+.hint-title { font-size: 10px; color: var(--gold-dark); letter-spacing: 1px; display: block; margin-bottom: 4px; text-transform: uppercase; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== VERDICT (自己判定フェーズ) ===== */
+.judge-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+.judge-title { font-size: 14px; font-weight: bold; color: var(--blue2); text-align: center; }
+.judge-kanji { font-family: 'Dela Gothic One', cursive; font-size: 110px; line-height: 1; color: var(--text); }
+.judge-read { font-size: 16px; font-weight: bold; color: var(--muted); }
+.judge-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+.j-ok {
+  padding: 18px 12px; border-radius: 18px; border: 2px solid var(--green); background: #fff; color: var(--green);
+  font-weight: 900; font-size: 16px; cursor: pointer; transition: all 0.2s; line-height: 1.6; box-shadow: var(--shadow-sm);
+}
+.j-ok:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05); }
+.j-ng {
+  padding: 18px 12px; border-radius: 18px; border: 2px solid var(--border); background: #fff; color: var(--muted);
+  font-weight: 900; font-size: 16px; cursor: pointer; transition: all 0.2s; line-height: 1.6;
+}
+.j-ng:hover { background: #f8fafc; border-color: var(--red); color: var(--red); }
+.end-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+.end-msg {
+  font-family: 'Dela Gothic One', cursive; font-size: 24px; text-align: center; padding: 20px;
+  border-radius: 20px; width: 100%; line-height: 1.6; box-shadow: var(--shadow-md); background: #fff;
+}
+.end-msg.hit { color: var(--gold-dark); border: 2px solid var(--gold); }
+.end-msg.miss { color: var(--muted); border: 2px solid var(--border); }
+.end-learn {
+  font-size: 14px; color: var(--text); text-align: center; line-height: 2.4; font-weight: bold;
+  background: #f8fafc; padding: 16px; border-radius: 16px; width: 100%;
+}
+.end-learn .hl { color: var(--blue2); font-size: 20px; font-family: 'Dela Gothic One', cursive; margin: 0 4px; }
+.next-btn {
+  padding: 18px 48px; border-radius: 20px; border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: white;
+  font-family: 'Dela Gothic One', cursive; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+}
+.next-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); }
+.dmg-popup {
+  position: fixed; top: 40%; left: 50%; transform: translate(-50%,-50%);
+  font-family: 'Dela Gothic One', cursive; font-size: 84px; pointer-events: none; z-index: 9999;
+  animation: dmgA 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+}
+@keyframes dmgA {
+  0%{opacity:0;transform:translate(-50%,-30%) scale(0.4)}
+  30%{opacity:1;transform:translate(-50%,-55%) scale(1.2)}
+  50%{transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-100%) scale(0.8)}
+}
+.danger-flash { animation: screenFlash 1.4s ease-in-out infinite; }
+@keyframes screenFlash { 0%,100%{background:var(--bg)} 50%{background:#ffe4e6} }
+#screen-result { flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 32px; text-align: center; }
+.trophy { font-size: 120px; animation: trophyFloat 2.5s ease-in-out infinite; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
+@keyframes trophyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+.winner-txt {
+  font-family: 'Dela Gothic One', cursive; font-size: 46px; letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--gold-dark), var(--pink2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.res-info { font-size: 16px; font-weight: 900; color: var(--text); line-height: 2; background: #fff; padding: 20px; border-radius: 20px; box-shadow: var(--shadow-sm); width: 100%; max-width: 480px; }
+.res-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.r-again { padding: 18px 36px; border-radius: 20px; border: none; background: linear-gradient(135deg, var(--blue), var(--blue2)); color: white; font-family: 'Dela Gothic One', cursive; font-size: 18px; cursor: pointer; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3); transition: all 0.2s; }
+.r-again:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); }
+.r-back { padding: 18px 36px; border-radius: 20px; border: 2px solid var(--border); background: #fff; color: var(--muted); font-family: 'Dela Gothic One', cursive; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+.r-back:hover { border-color: var(--muted); color: var(--text); background: #f8fafc; }
+input[type=range] { width: 100%; accent-color: var(--gold); cursor: pointer; }
+
+/* テスト一覧表 */
+.test-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 16px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.test-summary-item {
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+}
+.test-summary-item.ok {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+.test-summary-item.ng {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="screen-title" class="screen active">
+  <div class="title-box">
+    <div class="title-cards">🎴</div>
+    <div class="title-main"><ruby>漢字<rt>かんじ</rt></ruby>バトル</div>
+    <div class="title-sub">Kanji Battle Card Game & Tests</div>
+    <div class="title-deco">
+      <div class="title-deco-card"><ruby>木<rt>き</rt></ruby></div>
+      <div class="title-deco-card"><ruby>画<rt>がく</rt></ruby></div>
+      <div class="title-deco-card"><ruby>美<rt>び</rt></ruby></div>
+      <div class="title-deco-card"><ruby>術<rt>じゅつ</rt></ruby></div>
+    </div>
+    <button class="title-start-btn" onclick="goSetupScreen()">は じ め る</button>
+    <div class="title-hint">タップすると音楽が始まります 🎵</div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-box">
+    <div class="setup-logo">🎴 <ruby>漢字<rt>かんじ</rt></ruby>バトル <ruby>設定<rt>せってい</rt></ruby></div>
+    
+    <span class="s-label"><ruby>人数選択<rt>にんずうせんたく</rt></ruby> · Players</span>
+    <div class="mode-row players">
+      <button class="mode-btn on" id="play-single" onclick="selectPlayerMode('single')">1人プレイ</button>
+      <button class="mode-btn" id="play-multi" onclick="selectPlayerMode('multi')">2人プレイ</button>
+    </div>
+
+    <span class="s-label"><ruby>ゲームモード<rt>もーど</rt></ruby> · Game Mode</span>
+    <div class="mode-row">
+      <button class="mode-btn on" id="gamemode-battle" onclick="selectGamePlayMode('battle')">通常バトル</button>
+      <button class="mode-btn" id="gamemode-test" onclick="selectGamePlayMode('test')">実力テスト</button>
+    </div>
+
+    <!-- 2人プレイかつテストの時に表示：どちらのプレイヤーがテストを解くか -->
+    <div id="test-selector-section" style="display:none; margin-bottom: 12px;">
+      <span class="s-label"><ruby>テストに挑戦する人<rt>てすとちょうせんしゃ</rt></ruby> · Test Challenger</span>
+      <div class="mode-row">
+        <button class="mode-btn on" id="test-challenger-a" onclick="selectTestChallenger('a')">プレイヤーA</button>
+        <button class="mode-btn" id="test-challenger-b" onclick="selectTestChallenger('b')">プレイヤーB</button>
+      </div>
+    </div>
+
+    <span class="s-label"><ruby>学年<rt>がくねん</rt></ruby> · Grade</span>
+    <div class="grade-row" id="grade-row"></div>
+
+    <!-- 漢字の長さ：1文字のみ・熟語のみ・ランダム (バトル時のみ表示) -->
+    <div id="kanji-length-section">
+      <span class="s-label"><ruby>漢字の長さ<rt>かんじのながさ</rt></ruby> · Kanji Length</span>
+      <div class="three-btn-row">
+        <button class="mode-btn" id="length-single" onclick="selectKanjiLength('single')">1文字のみ</button>
+        <button class="mode-btn" id="length-compound" onclick="selectKanjiLength('compound')">熟語のみ</button>
+        <button class="mode-btn on" id="length-random" onclick="selectKanjiLength('random')">ランダム</button>
+      </div>
+    </div>
+    
+    <!-- 問題形式：読みのみ、書きのみ、読み・書き -->
+    <span class="s-label" id="format-label"><ruby>問題形式<rt>けいしき</rt></ruby> · Format</span>
+    <div class="three-btn-row" id="format-selection-container">
+      <button class="mode-btn" id="format-read" onclick="selectFormat('read')"><ruby>読みのみ<rt>よみのみ</rt></ruby></button>
+      <button class="mode-btn" id="format-write" onclick="selectFormat('write')"><ruby>書きのみ<rt>かきのみ</rt></ruby></button>
+      <button class="mode-btn on" id="format-both" onclick="selectFormat('both')"><ruby>読み・書き<rt>よみ・かき</rt></ruby></button>
+    </div>
+
+    <!-- 読み回答方法：四択、文字入力 -->
+    <span class="s-label" id="read-input-type-label"><ruby>読み問題の回答方法<rt>よみかいとうほうほう</rt></ruby> · Input Type</span>
+    <div class="mode-row">
+      <button class="mode-btn on" id="read-input-choice" onclick="selectReadInputType('choice')">四択から選ぶ</button>
+      <button class="mode-btn" id="read-input-text" onclick="selectReadInputType('text')">自分で入力する</button>
+    </div>
+
+    <span class="s-label">プレイヤー<ruby>名<rt>めい</rt></ruby></span>
+    <div class="name-grid" id="setup-name-grid">
+      <div class="n-wrap">
+        <div><span class="n-badge a" id="badge-a">A</span></div>
+        <input class="n-input a" id="input-a" value="プレイヤーA" placeholder="プレイヤーAのなまえ" maxlength="8">
+      </div>
+      <div class="n-wrap" id="wrap-player-b" style="display:none;">
+        <div><span class="n-badge b">B</span></div>
+        <input class="n-input b" id="input-b" value="プレイヤーB" placeholder="プレイヤーBのなまえ" maxlength="8">
+      </div>
+    </div>
+    
+    <!-- 設定連動エリア (1人プレイ時：問題数、2人プレイ時：HP / バトルモードのみ表示) -->
+    <div id="hp-interactive-section">
+      <span class="s-label" id="setup-interactive-label">HP · <ruby>体力<rt>たいりょく</rt></ruby></span>
+      <div class="hp-area">
+        <div class="hp-header">
+          <span class="hp-mode-badge standard" id="hp-badge"><ruby>標準対局<rt>ひょうじゅんたいきょく</rt></ruby></span>
+          <div class="hp-val" id="hp-display">20 HP</div>
+        </div>
+        <div class="hp-slider-wrap">
+          <input type="range" min="10" max="100" step="10" value="20" id="hp-slider" oninput="onHpSliderInput(this.value)">
+        </div>
+        <div class="hp-marks" id="hp-marks-container"></div>
+      </div>
+    </div>
+    
+    <div class="rule-panel" id="rule-desc-panel">
+      🎴 <b><ruby>毎<rt>まい</rt></ruby>ターン１<ruby>枚<rt>まい</rt></ruby>ドロー！クイズに<ruby>挑戦<rt>ちょうせん</rt></ruby>！</b><br>
+      📖 <b>1<ruby>文字<rt>もじ</rt></ruby>の「<ruby>読<rt>よ</rt></ruby>み」</b> → <span class="dmg-txt">-2 ダメージ</span><br>
+      ✏️ <b>1<ruby>文字<rt>もじ</rt></ruby>の「<ruby>書<rt>か</rt></ruby>き」</b> → <span class="dmg-txt">-4 ダメージ⚡ (自己判定)</span><br>
+      🔥 <b>二字熟語の「<ruby>読<rt>よ</rt></ruby>み」</b> → <span class="dmg-txt">-4 ダメージ💥</span><br>
+      ⚡ <b>二字熟語の「<ruby>書<rt>か</rt></ruby>き」</b> → <span class="dmg-txt">-8 ダメージ超必殺技!💥</span>
+    </div>
+
+    <div class="setup-btns">
+      <button class="back-btn" onclick="goTitleScreen()">もどる</button>
+      <button class="start-btn" onclick="startGame()">バトル開始！</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="game-inner">
+    <div class="g-header">
+      <div class="turn-pill a" id="active-turn-pill">プレイヤーAの番</div>
+      <div class="t-count" id="turn-display-count">ターン 1</div>
+      <button class="cfg-btn" onclick="quitGamePrompt()">あきらめる</button>
+    </div>
+
+    <!-- HP ゲージ (バトルモード用) / 進行度表示 (テストモード用) -->
+    <div class="hp-row" id="game-hp-row">
+      <div class="hp-card a" id="p-card-a">
+        <div class="hc-name" id="p-name-a">プレイヤーA</div>
+        <div class="hc-num" id="p-hp-a">20 / 20</div>
+        <div class="hc-bar-bg">
+          <div class="hc-bar-fill" id="p-bar-a" style="width: 100%; background: var(--blue);"></div>
+        </div>
+      </div>
+      <div class="vs-txt" id="game-vs-text">VS</div>
+      <div class="hp-card b" id="p-card-b">
+        <div class="hc-name" id="p-name-b">プレイヤーB</div>
+        <div class="hc-num" id="p-hp-b">20 / 20</div>
+        <div class="hc-bar-bg">
+          <div class="hc-bar-fill" id="p-bar-b" style="width: 100%; background: var(--pink);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- メインアリーナ -->
+    <div class="arena" id="arena-main">
+      <div class="arena-label" id="arena-stage-title">BATTLE ARENA</div>
+
+      <!-- 1: ドローフェーズ -->
+      <div id="phase-draw" style="display: flex; flex-direction: column; align-items: center; gap: 18px;">
+        <div class="draw-3d-wrap" onclick="performDraw()">
+          <div class="draw-card-btn" id="game-deck-card">
+            <div class="draw-card-front" id="game-deck-front">
+              <span class="draw-back-icon">🎴</span>
+              <div class="draw-text">カードを引く</div>
+            </div>
+            <div class="draw-card-back">
+              <span class="draw-back-icon">✨</span>
+              <div class="draw-text" id="drawn-card-title">漢字カード</div>
+            </div>
+          </div>
+        </div>
+        <div class="choose-msg" id="draw-instruction-text">
+          山札をタップして、漢字バトルカードをドローしてください！
+        </div>
+      </div>
+
+      <!-- 2: ドロー後、タイプ選択 (読み vs 書き) -->
+      <div id="phase-type-select" style="display: none; width: 100%; flex-direction: column; align-items: center; gap: 16px;">
+        <div class="card-type-badge" id="card-drawn-badge">一字漢字カード</div>
+        <div class="sentence-panel" id="drawn-hint-sentence" style="display: none;">
+          ひいた漢字: <span class="q-word">?</span>
+        </div>
+        <div class="choose-msg">
+          攻撃方法（よみ / かき）を選択してください！
+          <span>※書きは威力が高いですが、手書きクイズになります。</span>
+        </div>
+        <div class="type-grid">
+          <button class="type-btn read" onclick="chooseAttackType('read')">
+            <span class="tb-icon">📖</span>
+            <div class="tb-text-group">
+              <span class="tb-name">読み攻撃</span>
+              <span class="tb-dmg" id="dmg-lbl-read">ダメージ -2</span>
+            </div>
+          </button>
+          <button class="type-btn write" onclick="chooseAttackType('write')">
+            <span class="tb-icon">✏️</span>
+            <div class="tb-text-group">
+              <span class="tb-name">書き取り攻撃</span>
+              <span class="tb-dmg" id="dmg-lbl-write">ダメージ -4</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3: クイズフェーズ：読み取り (4択 または 文字入力) -->
+      <div id="phase-quiz-read" style="display: none; width: 100%; flex-direction: column; align-items: center; gap: 16px;">
+        <div class="read-q" id="read-quiz-prompt-text">次の漢字の正しい「読み」はどれ？</div>
+        <div class="read-kanji-display" id="read-quiz-kanji">親友</div>
+        <div class="sentence-panel" id="read-quiz-sentence">
+          公園で《親友》と出会った。
+        </div>
+        
+        <!-- 4択UI -->
+        <div class="read-options" id="read-options-container" style="display: none;">
+          <button class="read-opt">しんゆう</button>
+          <button class="read-opt">しんよう</button>
+          <button class="read-opt">したとも</button>
+          <button class="read-opt">おやとも</button>
+        </div>
+
+        <!-- キーボード入力UI -->
+        <div class="read-text-input-wrap" id="read-text-input-container" style="display: none;">
+          <input type="text" class="read-keyboard-input" id="read-keyboard-input-element" placeholder="ひらがなで入力" autofocus autocomplete="off">
+          <button class="read-keyboard-submit" onclick="submitReadTextAnswer()">回答を決定する</button>
+        </div>
+      </div>
+
+      <!-- 4: クイズフェーズ：書き取り (キャンバス) -->
+      <div id="phase-quiz-write" style="display: none; width: 100%; flex-direction: column; align-items: center; gap: 16px;">
+        <div class="cvs-wrap">
+          <div class="cvs-prompt">
+            カタカナの部分を漢字で書こう！
+            <span class="reading-big" id="write-target-kana">ウミ</span>
+          </div>
+          <div class="sentence-panel" id="write-quiz-sentence">
+            夏休みに《ウミ》で泳いだ。
+          </div>
+          <!-- レスポンシブキャンバス -->
+          <canvas id="draw-canvas" width="280" height="280"></canvas>
+          <div class="cvs-btns">
+            <button class="btn-erase" onclick="clearCanvas()">全部消す</button>
+            <button class="btn-done" onclick="submitCanvas()">できた！</button>
+          </div>
+        </div>
+
+        <!-- ヒント機能 -->
+        <div class="hint-zone">
+          <div class="hint-remain">のこりヒント: <span id="hint-count-display">3</span>回</div>
+          <div class="hint-row">
+            <button class="hint-btn" id="btn-hint-meaning" onclick="useHint('meaning')">意味ヒント</button>
+            <button class="hint-btn" id="btn-hint-stroke" onclick="useHint('stroke')">画数ヒント</button>
+          </div>
+          <div class="hint-box" id="hint-display-box" style="display:none;">
+            <span class="hint-title" id="hint-box-title">ヒント</span>
+            <div id="hint-box-text">漢字の意味：塩水が広がっている場所。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5: 自己判定・解答比較 (AI自動判定の代わりの画面) -->
+      <div id="phase-self-verdict" style="display: none; width: 100%; flex-direction: column; align-items: center; gap: 16px;">
+        <div class="judge-wrap">
+          <div class="judge-title">手書き判定：正解の漢字</div>
+          <div class="judge-kanji" id="correct-kanji-big">海</div>
+          <div class="judge-read" id="correct-kanji-kana">おんよみ・くんよみ：カイ / うみ</div>
+          <div class="word-meaning-box">
+            <span class="meaning-title-mini">ことばの意味</span>
+            <span id="correct-kanji-meaning">地球の広大な塩水の広がり。</span>
+          </div>
+          
+          <div class="choose-msg">
+            自分が書いた文字と正解を見比べて判定してください。
+          </div>
+          <div class="judge-btns">
+            <button class="j-ng" onclick="manualVerdict(false)">だめ（不合格）</button>
+            <button class="j-ok" onclick="manualVerdict(true)">合ってる！(合格)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6: ターン結果 / バトルメッセージ -->
+      <div id="phase-turn-end" style="display: none; width: 100%; flex-direction: column; align-items: center; gap: 16px;">
+        <div class="end-wrap">
+          <div class="end-msg" id="end-message-box">
+            攻撃成功！
+          </div>
+          <div class="end-learn" id="end-learn-box">
+            今回出題された漢字: <span class="hl">海</span> (うみ)<br>
+            【意味】地球上のひろい塩水の広がり。
+          </div>
+          <button class="next-btn" id="btn-next-turn" onclick="proceedToNextTurn()">次のターンへ</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="trophy" id="res-trophy">👑</div>
+  <div class="winner-txt" id="res-winner-title">プレイヤーA の勝利！</div>
+  
+  <div class="res-info" id="res-info-box">
+    対局終了！<br>
+    総ターン数: 8 ターン<br>
+    正解率: 85%
+  </div>
+
+  <div id="test-summary-container" style="display:none; width: 100%; max-width: 480px; text-align: left; background:#fff; padding: 20px; border-radius: 20px; box-shadow: var(--shadow-sm);">
+    <span class="s-label" style="text-align: center; display:block;"><ruby>解答一覧<rt>かいとういちらん</rt></ruby></span>
+    <div class="test-summary-grid" id="test-summary-grid">
+      <!-- JSで動的に追加 -->
+    </div>
+  </div>
+
+  <div class="res-btns">
+    <button class="r-again" onclick="restartSameGame()">もう一回あそぶ</button>
+    <button class="r-back" onclick="goTitleScreen()">設定にもどる</button>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// Web Audio API によるシンセサイザー
+// ==========================================
+class SoundController {
+  constructor() {
+    this.ctx = null;
+    this.bgmInterval = null;
+    this.bgmPlaying = false;
+    this.tempo = 120;
+    this.muted = false;
+  }
+
+  init() {
+    if (this.ctx) return;
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.warn("Web Audio API not supported", e);
+    }
+  }
+
+  playTone(freq, duration, type = "sine", gainVal = 0.1, delay = 0) {
+    this.init();
+    if (!this.ctx || this.muted) return;
+    
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+    
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+    
+    gainNode.gain.setValueAtTime(gainVal, this.ctx.currentTime + delay);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + delay + duration);
+    
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+    
+    osc.start(this.ctx.currentTime + delay);
+    osc.stop(this.ctx.currentTime + delay + duration);
+  }
+
+  playDraw() {
+    this.playTone(150, 0.1, "sine", 0.15);
+    this.playTone(300, 0.1, "sine", 0.1, 0.05);
+    this.playTone(600, 0.15, "triangle", 0.08, 0.1);
+  }
+
+  playSelect() {
+    this.playTone(523.25, 0.08, "square", 0.06);
+  }
+
+  playCorrect() {
+    const now = 0;
+    this.playTone(523.25, 0.1, "sine", 0.1, now);
+    this.playTone(659.25, 0.1, "sine", 0.1, now + 0.08);
+    this.playTone(783.99, 0.1, "sine", 0.1, now + 0.16);
+    this.playTone(1046.50, 0.3, "sine", 0.12, now + 0.24);
+  }
+
+  playIncorrect() {
+    this.playTone(220, 0.15, "sawtooth", 0.12);
+    this.playTone(220, 0.2, "sawtooth", 0.12, 0.12);
+  }
+
+  playDamage() {
+    this.init();
+    if (!this.ctx || this.muted) return;
+    
+    const duration = 0.4;
+    const osc = this.ctx.createOscillator();
+    const gainNode = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + duration);
+    
+    gainNode.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+    
+    osc.connect(gainNode);
+    gainNode.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration);
+  }
+
+  playVictory() {
+    const t = 0.12;
+    this.playTone(523, t, "square", 0.08, 0);
+    this.playTone(523, t, "square", 0.08, t);
+    this.playTone(523, t, "square", 0.08, t*2);
+    this.playTone(523, t*2, "square", 0.08, t*3);
+    this.playTone(415, t*2, "square", 0.08, t*5);
+    this.playTone(466, t*2, "square", 0.08, t*7);
+    this.playTone(523, t*4, "square", 0.1, t*9);
+  }
+
+  startBGM() {
+    this.init();
+    if (this.bgmPlaying) return;
+    this.bgmPlaying = true;
+    
+    let step = 0;
+    const melody = [
+      261.63, 293.66, 329.63, 392.00, 349.23, 329.63, 293.66, 261.63,
+      329.63, 349.23, 392.00, 440.00, 392.00, 349.23, 329.63, 293.66,
+      220.00, 261.63, 293.66, 329.63, 261.63, 220.00, 196.00, 220.00,
+      261.63, 329.63, 293.66, 392.00, 329.63, 293.66, 261.63, 293.66
+    ];
+
+    const bass = [
+      130.81, 130.81, 164.81, 164.81, 174.61, 174.61, 146.83, 146.83,
+      164.81, 164.81, 196.00, 196.00, 174.61, 174.61, 146.83, 146.83,
+      110.00, 110.00, 130.81, 130.81, 110.00, 110.00, 98.00, 98.00,
+      130.81, 130.81, 146.83, 146.83, 164.81, 164.81, 130.81, 130.81
+    ];
+
+    this.bgmInterval = setInterval(() => {
+      if (this.muted) return;
+      if (step % 2 === 0) {
+        this.playTone(melody[Math.floor(step / 2) % melody.length], 0.15, "triangle", 0.02);
+      }
+      this.playTone(bass[Math.floor(step / 2) % bass.length], 0.22, "sine", 0.04);
+      step++;
+    }, 200);
+  }
+
+  stopBGM() {
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
+    }
+    this.bgmPlaying = false;
+  }
+}
+
+const sounds = new SoundController();
+
+// ==========================================
+// 漢字データベース (各学年 読み20問、書き20問の完全復元)
+// ==========================================
+const KANJI_DB = {
+  2: {
+    write: [
+      { kanji: "一つ", read: "ひとつ", sentence: "《一つ》のりんご。", meaning: "数の一つ。単一の物。", stroke: 3 },
+      { kanji: "大小", read: "だいしょう", sentence: "《大小》をくらべる。", meaning: "大きいことと小さいこと。", stroke: 6 },
+      { kanji: "一年生", read: "いちねんせい", sentence: "《一年生》になる。", meaning: "入学して最初の学年。", stroke: 13 },
+      { kanji: "大好き", read: "だいすき", sentence: "《大好き》なおかず。", meaning: "非常にお気に入りな様子。", stroke: 9 },
+      { kanji: "大きい", read: "おおきい", sentence: "《大きい》いえ。", meaning: "形や規模、量などがすぐれている。", stroke: 6 },
+      { kanji: "町", read: "まち", sentence: "《町》たんけん。", meaning: "多くの人が暮らすにぎやかな地域。", stroke: 7 },
+      { kanji: "早い", read: "はやい", sentence: "あさの《早い》じかん。", meaning: "基準となる時刻より前である。", stroke: 6 },
+      { kanji: "遠く", read: "とおく", sentence: "《遠く》までみえる。", meaning: "距離が大きく離れた場所。", stroke: 14 },
+      { kanji: "正しい", read: "ただしい", sentence: "《正しい》こえ。", meaning: "真実や道理に合致している。", stroke: 8 },
+      { kanji: "お金", read: "おかね", sentence: "《お金》をはらう。", meaning: "物品の交換に用いる通貨。", stroke: 13 },
+      { kanji: "人", read: "ひと", sentence: "となりの《人》。", meaning: "地球上に生きる人間。", stroke: 2 },
+      { kanji: "車", read: "くるま", sentence: "《車》にのる。", meaning: "自動車や輪のある移動手段。", stroke: 7 },
+      { kanji: "先生", read: "せんせい", sentence: "《先生》のはなし。", meaning: "勉強を教えてくれる指導者。", stroke: 14 },
+      { kanji: "本", read: "ほん", sentence: "《本》をよむ。", meaning: "文字や図が印刷された書物。", stroke: 5 },
+      { kanji: "男の子", read: "おとこのこ", sentence: "《男の子》が走る。", meaning: "男性の児童・少年。", stroke: 10 },
+      { kanji: "女の子", read: "おんなのこ", sentence: "《女の子》が集まる。", meaning: "女性の児童・少女。", stroke: 6 },
+      { kanji: "耳", read: "みみ", sentence: "《耳》がおおきい。", meaning: "音を聴くための身体の器官。", stroke: 6 },
+      { kanji: "王さま", read: "おうさま", sentence: "《王さま》の命令。", meaning: "国を支配する最も偉い支配者。", stroke: 7 },
+      { kanji: "自動車", read: "じどうしゃ", sentence: "《自動車》が通る。", meaning: "エンジンで自走する四輪車。", stroke: 13 },
+      { kanji: "左手", read: "ひだりて", sentence: "《左手》をだす。", meaning: "左側にある手。", stroke: 9 }
+    ],
+    read: [
+      { kanji: "入れる", read: "いれる", sentence: "はこの中にものを《入れる》。", meaning: "外から内側へと移動させる。", stroke: 4 },
+      { kanji: "小さい", read: "ちいさい", sentence: "《小さい》はこを見つけた。", meaning: "形や規模が大きくない様子。", stroke: 6 },
+      { kanji: "音", read: "おと", sentence: "美しい《音》がひびく。", meaning: "耳で聴こえる空気の振動波。", stroke: 9 },
+      { kanji: "かん字", read: "かんじ", sentence: "毎日《かん字》の練習をする。", meaning: "中国を起源とする表意文字。", stroke: 11 },
+      { kanji: "天気", read: "てんき", sentence: "あしたの《天気》を調べる。", meaning: "空の様子や気温などの気象状態。", stroke: 10 },
+      { kanji: "休む", read: "やすむ", sentence: "少し《休む》時間をつくる。", meaning: "活動を休止して体力を回復する。", stroke: 8 },
+      { kanji: "名まえ", read: "なまえ", sentence: "自分の《名まえ》をかく。", meaning: "人を識別するために付けられた名称。", stroke: 9 },
+      { kanji: "月", read: "つき", sentence: "夜空に光る《月》。", meaning: "地球の周りを回る唯一の衛星。", stroke: 4 },
+      { kanji: "大学", read: "だいがく", sentence: "《大学》で専門の勉強をする。", meaning: "最高学問を学ぶ高等教育機関。", stroke: 11 },
+      { kanji: "水", read: "みず", sentence: "冷たい《水》をのむ。", meaning: "無色無臭で生命に不可欠な液体。", stroke: 4 },
+      { kanji: "口", read: "くち", sentence: "大きな《口》をあける。", meaning: "食べ物を摂取し、言葉を発する穴。", stroke: 3 },
+      { kanji: "犬", read: "いぬ", sentence: "《犬》が元気に走る。", meaning: "人間にきわめて親密な哺乳類動物。", stroke: 4 },
+      { kanji: "雨", read: "あめ", sentence: "外は《雨》がふっている。", meaning: "空から降る液体の水滴。", stroke: 8 },
+      { kanji: "村", read: "むら", sentence: "緑ゆたかな《村》にすむ。", meaning: "地方の小さな共同体・居住地。", stroke: 7 },
+      { kanji: "青い", read: "あおい", sentence: "《青い》海が広がっている。", meaning: "晴れた空や深い海のような色彩。", stroke: 10 },
+      { kanji: "山", read: "やま", sentence: "高い《山》にのぼる。", meaning: "周囲の平地より大きく隆起した地形。", stroke: 3 },
+      { kanji: "手", read: "て", sentence: "《手》をきれいにあらう。", meaning: "人間の腕の先端にあるつかむ部位。", stroke: 4 },
+      { kanji: "青空", read: "あおぞら", sentence: "美しい《青空》がひろがる。", meaning: "雲のない、はれわたった青い空。", stroke: 14 },
+      { kanji: "足", read: "あし", sentence: "《足》がはやくなる練習。", meaning: "歩行や走るために使われる下肢部分。", stroke: 7 },
+      { kanji: "学校", read: "gakkou", read: "がっこう", sentence: "まいにち《学校》にいく。", meaning: "児童が学び集う公的な教育の場。", stroke: 20 }
+    ]
+  },
+  3: {
+    write: [
+      { kanji: "空中", read: "くうちゅう", sentence: "《空中》にうく。", meaning: "空の中。地上から離れた大気中。", stroke: 12 },
+      { kanji: "点数", read: "てんすう", sentence: "《点数》がたかい。", meaning: "得点や成績を表す数値。", stroke: 22 },
+      { kanji: "水分", read: "すいぶん", sentence: "《水分》をとる。", meaning: "物質の中に含まれている水。", stroke: 8 },
+      { kanji: "六時", read: "ろくじ", sentence: "《六時》におきる。", meaning: "午前または午後の六つの時間帯。", stroke: 14 },
+      { kanji: "正月", read: "しょうがつ", sentence: "《正月》をすごす。", meaning: "年が明けた最初の一カ月・三が日。", stroke: 9 },
+      { kanji: "計算", read: "けいさん", sentence: "《計算》をする。", meaning: "数値を計算式に従って算出すること。", stroke: 23 },
+      { kanji: "会社", read: "かいしゃ", sentence: "《会社》にいく。", meaning: "営利目的などで共同 of 共同の事業を行う組織。", stroke: 13 },
+      { kanji: "本気", read: "ほんき", sentence: "《本気》で走る。", meaning: "うそ偽りのない、真剣なきもち。", stroke: 11 },
+      { kanji: "天才", read: "てんさい", sentence: "《天才》になりたい。", meaning: "生まれつききわめて高い才能を持つ人。", stroke: 7 },
+      { kanji: "科学的", read: "かがくてき", sentence: "《科学的》なアプローチ。", meaning: "実証され論理が明確である性質。", stroke: 25 },
+      { kanji: "手紙", read: "てがみ", sentence: "《手紙》をかく。", meaning: "気持ちを文字で相手に伝える書面。", stroke: 14 },
+      { kanji: "音楽", read: "おんがく", sentence: "《音楽》をきく。", meaning: "音による芸術。メロディー。", stroke: 22 },
+      { kanji: "風船", read: "ふうせん", sentence: "《風船》であそぶ。", meaning: "ゴムなどの袋に空気を入れ膨らませたおもちゃ。", stroke: 20 },
+      { kanji: "九九", read: "くく", sentence: "《九九》をおぼえる。", meaning: "一桁同士の掛け算の暗唱用テーブル。", stroke: 4 },
+      { kanji: "夕日", read: "ゆうひ", sentence: "《夕日》をみる。", meaning: "夕方、西の空に沈みかける太陽。", stroke: 7 },
+      { kanji: "地図", read: "ちず", sentence: "《地図》をみる。", meaning: "地表の様子を縮尺して紙に描いた図。", stroke: 14 },
+      { kanji: "番組", read: "ばんぐみ", sentence: "すきな《番組》をみる。", meaning: "テレビやラジオで放送される個別プログラム。", stroke: 24 },
+      { kanji: "公園", read: "こうえん", sentence: "《公園》であそぶ。", meaning: "公衆が休息や遊戯を楽しむための緑地。", stroke: 23 },
+      { kanji: "元気", read: "げんき", sentence: "《元気》なこえ。", meaning: "活動の源となる力。いきいきとした様子。", stroke: 10 },
+      { kanji: "目玉", read: "めだま", sentence: "《目玉》やきを食べる。", meaning: "眼球。または卵の黄身を崩さず焼いた形。", stroke: 10 }
+    ],
+    read: [
+      { kanji: "大会", read: "たいかい", sentence: "漢字の《大会》に出場する。", meaning: "多くの人が集まって競う大きな催し。", stroke: 9 },
+      { kanji: "前後", read: "ぜんご", sentence: "車の《前後》を確認する。", meaning: "まえとうしろ。", stroke: 18 },
+      { kanji: "曜日", read: "ようび", sentence: "今日の《曜日》を確認する。", meaning: "一週間を構成する個々のサイクル。", stroke: 22 },
+      { kanji: "毎日", read: "まいにち", sentence: "《毎日》コツコツ勉強する。", meaning: "明けても暮れても一日一日欠かさず。", stroke: 10 },
+      { kanji: "日記", read: "にっき", sentence: "その日の出来事を《日記》に書く。", meaning: "毎日の出来事や所感を記録した書物。", stroke: 14 },
+      { kanji: "野原", read: "のはら", sentence: "緑いっぱいの《野原》を走る。", meaning: "草が生い茂った広く平らな土地。", stroke: 21 },
+      { kanji: "半分", read: "はんぶん", sentence: "リンゴを《半分》に分ける。", meaning: "二等分したうちの一つのパート。", stroke: 9 },
+      { kanji: "自分", read: "じぶん", sentence: "《自分》の力で解いてみよう。", meaning: "その人自身。自己。", stroke: 11 },
+      { kanji: "午後", read: "ごご", sentence: "今日の《午後》から雨が降る。", meaning: "正午から夜の12時までの時間帯。", stroke: 13 },
+      { kanji: "親友", read: "しんゆう", sentence: "一番信頼できる《親友》と会う。", meaning: "互いに非常に心を通わせ合っている友達。", stroke: 20 },
+      { kanji: "花火", read: "はなび", sentence: "夏の夜空に《花火》が打ち上がる。", meaning: "火薬を用いて美しい光や音を出す玩具。", stroke: 11 },
+      { kanji: "兄弟", read: "きょうだい", sentence: "仲良く遊ぶ《兄弟》。", meaning: "血のつながった男性のきょうだい関係。", stroke: 12 },
+      { kanji: "空気", read: "くうき", sentence: "山の《空気》はおいしい。", meaning: "地球を取り巻く目に見えない気体の混合物。", stroke: 12 },
+      { kanji: "人間", read: "にんげん", sentence: "《人間》にとって大切なこと。", meaning: "人。人類の仲間。", stroke: 14 },
+      { kanji: "足首", read: "あしくび", sentence: "《足首》をまわして準備体操する。", meaning: "足とすねをつなぐ関節部分。", stroke: 16 },
+      { kanji: "算数", read: "san_suu", read: "算数", read: "さんすう", sentence: "一番得意な教科は《算数》だ。", meaning: "数や量、図形を学ぶ小学校の算術。", stroke: 27 },
+      { kanji: "茶色", read: "ちゃいろ", sentence: "落ち葉の《茶色》が秋を感じさせる。", meaning: "お茶の葉を煎じたような落ち着いた褐色。", stroke: 15 },
+      { kanji: "名前", read: "なまえ", sentence: "答案用紙に《名前》を丁寧に書く。", meaning: "人や物体を表すために名付けられた固有の言葉。", stroke: 17 },
+      { kanji: "黄色", read: "きいろ", sentence: "ひまわりの《黄色》がとてもあざやかだ。", meaning: "レモンや卵の黄身に代表される明るい暖色。", stroke: 18 },
+      { kanji: "小鳥", read: "ことり", sentence: "朝早くに《小鳥》がさえずる。", meaning: "すずめやウグイスなどの小さな鳥。", stroke: 14 }
+    ]
+  },
+  4: {
+    write: [
+      { kanji: "月曜", read: "げつよう", sentence: "《月曜》になる。", meaning: "週の最初。月曜日のこと。", stroke: 22 },
+      { kanji: "時代", read: "じだい", sentence: "《時代》のながれ。", meaning: "歴史的な時間の区分。一定の期間。", stroke: 15 },
+      { kanji: "日数", read: "にっすう", sentence: "《日数》をかぞえる。", meaning: "ある期間を構成する日の数。", stroke: 17 },
+      { kanji: "意味", read: "いみ", sentence: "《意味》をしらべる。", meaning: "言葉が表している中身や内容。", stroke: 21 },
+      { kanji: "様子", read: "ようす", sentence: "《様子》をみる。", meaning: "外側から観察できる状態や仕草。", stroke: 17 },
+      { kanji: "偉大", read: "いだい", sentence: "《偉大》なじんぶつ。", meaning: "業績や人格が普通より並外れて優れている。", stroke: 15 },
+      { kanji: "国内", read: "こくない", sentence: "《国内》のできごと。", meaning: "自分の国、あるいは特定の国の内部。", stroke: 12 },
+      { kanji: "学期", read: "がっき", sentence: "新しい《学期》が始まる。", meaning: "一年をいくつかに分けた授業期間の単位。", stroke: 20 },
+      { kanji: "役目", read: "やくめ", sentence: "《役目》をはたす。", meaning: "割り当てられた仕事や果たすべき任務。", stroke: 12 },
+      { kanji: "来週", read: "らいしゅう", sentence: "《来週》のよてい。", meaning: "今週の次の週。", stroke: 18 },
+      { kanji: "口笛", read: "くちぶえ", sentence: "《口笛》をふく。", meaning: "口をすぼめて息を吹き出し、高い音を鳴らす。", stroke: 14 },
+      { kanji: "写真", read: "しゃしん", sentence: "《写真》をとる。", meaning: "カメラを用いて光を平面に記録した画像。", stroke: 15 },
+      { kanji: "毛虫", read: "けむし", sentence: "《毛虫》が出る。", meaning: "体に多くの毛や棘を持つ蛾などの幼虫。", stroke: 10 },
+      { kanji: "電柱", read: "でんちゅう", sentence: "《電柱》にぶつかる。", meaning: "電線を架け渡すために道端に建てる柱。", stroke: 22 },
+      { kanji: "筆箱", read: "ふでばこ", sentence: "《筆箱》を出す。", meaning: "鉛筆や消しゴムなどの筆記用具を収めるケース。", stroke: 27 },
+      { kanji: "洋服", read: "ようふく", sentence: "《洋服》を着る。", meaning: "西洋式の衣類。スーツやドレス、カジュアル服など。", stroke: 17 },
+      { kanji: "手帳", read: "てちょう", sentence: "《手帳》をひらく。", meaning: "予定やメモを書き留める、持ち歩き用の小さな本。", stroke: 16 },
+      { kanji: "野球", read: "やきゅう", sentence: "《野球》をする。", meaning: "バットとボールを用いて二チームで競う球技。", stroke: 22 },
+      { kanji: "直茶", read: "ちょくちゃ", sentence: "《直茶》をのむ。", meaning: "直火による乾燥工程を重視した伝統的な煎茶の表現。", stroke: 17 },
+      { kanji: "旅行", read: "りょこう", sentence: "《旅行》をする。", meaning: "住んでいる土地を一時的に離れ、観光に行くこと。", stroke: 16 }
+    ],
+    read: [
+      { kanji: "社会", read: "しゃかい", sentence: "わたしたちが暮らす《社会》のルール。", meaning: "人々が共同で生活を営むつながりの全体。", stroke: 13 },
+      { kanji: "真実", read: "しんじつ", sentence: "うそのない《真実》を突き止める。", meaning: "嘘や偽りのない、本当のこと。", stroke: 18 },
+      { kanji: "事実", read: "じじつ", sentence: "実際に起こった《事実》を記録する。", meaning: "現実に本当に起こった事柄。", stroke: 16 },
+      { kanji: "長年", read: "ながねん", sentence: "《長年》の研究がようやく実を結ぶ。", meaning: "何年もの非常に長い歳月。", stroke: 14 },
+      { kanji: "場所", read: "ばしょ", sentence: "集合する《場所》を確認する。", meaning: "位置、特定の空間、活動が行われる地点。", stroke: 18 },
+      { kanji: "次回", read: "じかい", sentence: "《次回》の対戦相手が決まった。", meaning: "この次の機会。次の回。", stroke: 12 },
+      { kanji: "学問", read: "がくもん", sentence: "深く《学問》を追究する。", meaning: "体系的に整理された知識 of 体系的に整理された知識の追究や勉強。", stroke: 19 },
+      { kanji: "平気", read: "へいき", sentence: "これくらいの寒さは《平気》だ。", meaning: "心配や恐れがなく、心が落ち着いている様子。", stroke: 11 },
+      { kanji: "場面", read: "ばめん", sentence: "映画の感動的な《場面》を思い出す。", meaning: "特定のシーンや状況。", stroke: 21 },
+      { kanji: "公平", read: "こうへい", sentence: "審判は《公平》なジャッジをする。", meaning: "偏りがなく偏見を交えずに等しく扱う様子。", stroke: 9 },
+      { kanji: "着物", read: "きもの", sentence: "お正月に伝統的な《着物》を着る。", meaning: "日本の伝統的な衣服。和服の総称。", stroke: 20 },
+      { kanji: "大豆", read: "だいず", sentence: "《大豆》を原料に味噌をつくる。", meaning: "醤油や豆腐、納豆などの主原料となるマメ。", stroke: 10 },
+      { kanji: "太陽", read: "たいよう", sentence: "《太陽》の光がさんさんと降り注ぐ。", meaning: "太陽系の中心で自ら巨大な熱と光を放つ天体。", stroke: 16 },
+      { kanji: "医者", read: "いしゃ", sentence: "将来は《医者》になって病気の人を治す。", meaning: "医師。病気の治療を行う免許を持った専門家。", stroke: 15 },
+      { kanji: "病院", read: "びょういん", sentence: "具合が悪いので《病院》にいく。", meaning: "怪我や病気の治療設備と病床を備えた施設。", stroke: 22 },
+      { kanji: "銀色", read: "ぎんいろ", sentence: "月が夜空で《銀色》に輝いている。", meaning: "シルバー。金属の銀のような白く美しい光沢の色。", stroke: 20 },
+      { kanji: "屋根", read: "やね", sentence: "《屋根》の上に風見鶏が立っている。", meaning: "雨風を防ぐために建物の最上部を覆う構造物。", stroke: 19 },
+      { kanji: "絵本", read: "えほん", sentence: "おやすみ前に《絵本》を読んでもらう。", meaning: "美しいイラストが主役となっている児童用の書籍。", stroke: 17 },
+      { kanji: "水泳", read: "すいえい", sentence: "夏休みの間《水泳》クラブに通う。", meaning: "水の中を手足を使って自由に泳ぐ運動・競技。", stroke: 12 },
+      { kanji: "麦茶", read: "むぎちゃ", sentence: "冷たい《麦茶》を飲んで水分を補給する。", meaning: "大麦を煎じて作る香ばしい飲み物。", stroke: 20 }
+    ]
+  },
+  5: {
+    write: [
+      { kanji: "対象", read: "たいしょう", sentence: "けんさの《対象》。", meaning: "作用や行為が向けられる、その相手や目標。", stroke: 22 },
+      { kanji: "今度", read: "こんど", sentence: "《今度》はがんばる。", meaning: "この次。あるいは今回を指すこともある表現。", stroke: 13 },
+      { kanji: "結局", read: "けっきょく", sentence: "《結局》おわらない。", meaning: "物事がいろいろ経た末の、最終的なおさまりどころ。", stroke: 19 },
+      { kanji: "流通", read: "りゅうつう", sentence: "野菜の《流通》システム。", meaning: "商品が生産者から消費者の手に届くまでの一連の流れ。", stroke: 19 },
+      { kanji: "新型", read: "しんがた", sentence: "《新型》の車。", meaning: "新しいスタイルやモデルのこと。", stroke: 22 },
+      { kanji: "特定", read: "とくてい", sentence: "犯人を《特定》する。", meaning: "それと指定して、はっきりと定めること。", stroke: 14 },
+      { kanji: "以前", read: "いぜん", sentence: "《以前》のできごと。", meaning: "ある時点より前。過去。", stroke: 14 },
+      { kanji: "数量", read: "すうりょう", sentence: "《数量》を調べる。", meaning: "数と量。個数や重さなど。", stroke: 25 },
+      { kanji: "特殊", read: "とくしゅ", sentence: "《特殊》ぶたい。", meaning: "平均的な性質とは異なる、際立って変わった状態。", stroke: 18 },
+      { kanji: "機会", read: "きかい", sentence: "あえる《機会》が少ない。", meaning: "あることを行うのに都合の良い、ちょうど良いチャンス。", stroke: 22 },
+      { kanji: "課題", read: "かだい", sentence: "宿題の《課題》が終わる。", meaning: "解決しなければならない問題や、与えられた任務。", stroke: 25 },
+      { kanji: "楽器", read: "がっき", sentence: "《楽器》をえんそうする。", meaning: "音楽を奏でるために作られた道具の総称。", stroke: 27 },
+      { kanji: "散歩", read: "さんぽ", sentence: "のんびりと《散歩》をする。", meaning: "健康や気晴らしのために、あてもなくゆっくり歩くこと。", stroke: 19 },
+      { kanji: "名札", read: "なふだ", sentence: "胸に《名札》をつける。", meaning: "自分の名前を記入して衣服に示すための小さな札。", stroke: 11 },
+      { kanji: "食塩", read: "しょくえん", sentence: "調味料に《食塩》をつかう。", meaning: "料理などで用いられる、純度の高い精製された塩。", stroke: 22 },
+      { kanji: "小指", read: "こゆび", sentence: "《小指》の爪をきる。", meaning: "人間の手の五本の指の中で、最も外側の最も小さい指。", stroke: 12 },
+      { kanji: "食堂", read: "しょくどう", sentence: "みんなで《食堂》に集まる。", meaning: "多くの人が食事をするために設けられた部屋、店舗。", stroke: 19 },
+      { kanji: "交番", read: "交番", read: "こうばん", sentence: "お巡りさんのいる《交番》にとどける。", meaning: "地域の治安を維持するための、地域警察官の活動拠点。", stroke: 18 },
+      { kanji: "給食", read: "きゅうしょく", sentence: "楽しい《給食》の時間。", meaning: "学校などで、集団に対して一斉に提供される食事。", stroke: 21 },
+      { kanji: "牧場", read: "ぼくじょう", sentence: "広い《牧場》の牛たち。", meaning: "牛や馬などの家畜を放牧して飼育する広大な施設。", stroke: 20 }
+    ],
+    read: [
+      { kanji: "以上", read: "いじょう", sentence: "これ《以上》は進めない。", meaning: "数量・段階がその基準よりも上であること。", stroke: 8 },
+      { kanji: "実感", read: "じっかん", sentence: "合格の喜びを《実感》する。", meaning: "心からその通りだと深く身に染みて感じること。", stroke: 21 },
+      { kanji: "当然", read: "とうぜん", sentence: "努力したのだから合格は《当然》だ。", meaning: "道理にかなっており、ごく当たり前のこと。", stroke: 21 },
+      { kanji: "特色", read: "とくしょく", sentence: "わが校の素晴らしい《特色》をアピールする。", meaning: "他とは違って特に際立っている性質や魅力。", stroke: 18 },
+      { kanji: "共同", read: "きょうどう", sentence: "チームワークを発揮して《共同》で作業する。", meaning: "二人以上の人が協力して同じ目的の活動を行うこと。", stroke: 14 },
+      { kanji: "作法", read: "さほう", sentence: "お茶の美しい《作法》を身につける。", meaning: "礼儀にかなった立ち振る舞いのルール・マナー。", stroke: 15 },
+      { kanji: "単位", read: "たんい", sentence: "重さの《単位》をキログラムで表す。", meaning: "量や大きさを測るための基準となる尺度。", stroke: 13 },
+      { kanji: "各地", read: "かくち", sentence: "日本の《各地》に伝わる伝統芸能を調べる。", meaning: "あちこちのさまざまな地域や場所。", stroke: 12 },
+      { kanji: "民族", read: "みんぞく", sentence: "その国に古くから住む《民族》の衣装。", meaning: "言語や文化、歴史を共にする共同体グループ。", stroke: 16 },
+      { kanji: "各自", read: "かくじ", sentence: "明日の持ち物は《各自》で準備しよう。", meaning: "それぞれの一人ひとり。", stroke: 12 },
+      { kanji: "老人", read: "ろうじん", sentence: "近所のお年寄り《老人》の家をお見舞いする。", meaning: "年齢が高くなり、知恵を豊富に持った高齢の人。", stroke: 8 },
+      { kanji: "塩水", read: "しおみず", sentence: "実験で使う濃い《塩水》を作る。", meaning: "食塩が溶け込んでいる水。", stroke: 17 },
+      { kanji: "薬指", read: "くすりゆび", sentence: "左手の《薬指》に指輪をはめる。", meaning: "中指と小指の間にある、五本の指の四番目の指。", stroke: 25 },
+      { kanji: "矢印", read: "やじるし", sentence: "順路を示す《矢印》に沿って歩く。", meaning: "方向を指し示すために矢の形をしたマーク。", stroke: 11 },
+      { kanji: "俳句", read: "はいく", sentence: "国語の授業で五・七・五の《俳句》を作る。", meaning: "季語を含めて五・七・五 of 五・七・五の音数で詠む日本の定型短詩。", stroke: 13 },
+      { kanji: "卒業", read: "そつぎょう", sentence: "思い出のたくさん詰まった小学校を《卒業》する。", meaning: "学校での全課程を修了して次のステップへ進むこと。", stroke: 21 },
+      { kanji: "野菜", read: "やさい", sentence: "体の健康のために新鮮な《野菜》を毎日食べる。", meaning: "食用として栽培される草本性の植物の総称。", stroke: 22 },
+      { kanji: "英語", read: "えいご", sentence: "世界の人々とコミュニケーションするために《英語》を学ぶ。", meaning: "イギリスやアメリカなどで広く話されている国際共通語。", stroke: 22 },
+      { kanji: "夕飯", read: "ゆうはん", sentence: "今日の《夕飯》は大好きなハンバーグだ。", meaning: "夕方や夜に食べる一日の最後の食事。", stroke: 15 },
+      { kanji: "料理", read: "りょうり", sentence: "お母さんの手伝いで簡単な《料理》を作る。", meaning: "食材を美味しく食べられるように加工調理したもの。", stroke: 22 }
+    ]
+  },
+  6: {
+    write: [
+      { kanji: "残高", read: "ざんだか", sentence: "預金《残高》がふえる。", meaning: "支払いや引き出しを行った後に残っている金額。", stroke: 20 },
+      { kanji: "不良", read: "ふりょう", sentence: "今年は作物が《不良》だ。", meaning: "質や状態が良くないこと。不出来。", stroke: 14 },
+      { kanji: "家老", read: "かろう", sentence: "《家老》の指示をきく。", meaning: "武家で、大名家に仕えた最も重い役職。", stroke: 16 },
+      { kanji: "生産", read: "せいさん", sentence: "野菜を《生産》する。", meaning: "人間が生活に必要な物を作り出す活動。", stroke: 16 },
+      { kanji: "必要", read: "ひつよう", sentence: "生活に《必要》なもの。", meaning: "欠かすことができず、絶対になければならない状態。", stroke: 14 },
+      { kanji: "国産", read: "こくさん", sentence: "《国産》の車。", meaning: "自分の国で製造、または生産されたこと。", stroke: 16 },
+      { kanji: "要望", read: "ようぼう", sentence: "改善を《要望》する。", meaning: "強くその実現を望み、願い求めること。", stroke: 21 },
+      { kanji: "養分", read: "ようぶん", sentence: "《養分》をあげる。", meaning: "生物が成長し生きていくために必要な栄養素。", stroke: 19 },
+      { kanji: "分類", read: "ぶんるい", sentence: "本を《分類》する。", meaning: "種類や性質、共通の共通点に従ってグループ分けすること。", stroke: 23 },
+      { kanji: "要点", read: "ようてん", sentence: "《要点》をまとめる。", meaning: "事柄の一番大切な中心部分。", stroke: 18 },
+      { kanji: "不安", read: "ふあん", sentence: "《不安》になる。", meaning: "気がかりで落ち着かず、心配な様子。", stroke: 10 },
+      { kanji: "失業", read: "しつぎょう", sentence: "社会問題の《失業》を解決する。", meaning: "持っていた仕事を失う、または職がない状態。", stroke: 18 },
+      { kanji: "手芸", read: "しゅげい", sentence: "《手芸》が好き。", meaning: "糸や布を用いて、手作業で刺繍や裁縫を行うこと。", stroke: 15 },
+      { kanji: "表札", read: "ひょうさつ", sentence: "門柱に《表札》を出す。", meaning: "建物の入り口などに名字を掲げて示す札。", stroke: 13 },
+      { kanji: "消費", read: "しょうひ", sentence: "エネルギーを《消費》する。", meaning: "使って無くすこと。お金や資源を費やす活動。", stroke: 23 },
+      { kanji: "伝達", read: "でんたつ", sentence: "用件を《伝達》する。", meaning: "意思や命令、情報を順次伝えて行かせること。", stroke: 18 },
+      { kanji: "便利", read: "べんり", sentence: "とても《便利》なもの。", meaning: "都合が良く役に立ち、手間が省ける様子。", stroke: 16 },
+      { kanji: "氏名", read: "しめい", sentence: "カードに《氏名》をかく。", meaning: "氏（名字）と名（名前）の全体。", stroke: 10 },
+      { kanji: "付録", read: "ふろく", sentence: "雑誌に《付録》がついている。", meaning: "本などの主たる部分のほかに付け加えられたおまけ。", stroke: 21 },
+      { kanji: "駅伝", read: "えきでん", sentence: "《駅伝》に出たい。", meaning: "タスキをリレーして長距離を走りつなぐ競走競技。", stroke: 21 }
+    ],
+    read: [
+      { kanji: "必然", read: "ひつぜん", sentence: "この結果は《必然》の帰結だ。", meaning: "道理上、必ずそうなるに決まっていること。", stroke: 14 },
+      { kanji: "原形", read: "げんけい", sentence: "元の形である《原形》を保っている。", meaning: "加工されたり変化したりする前の、最初の形。", stroke: 19 },
+      { kanji: "管理", read: "かんり", sentence: "健康《管理》をしっかり行う。", meaning: "良い状態を維持するように支配・監督・維持すること。", stroke: 25 },
+      { kanji: "必殺", read: "ひっさつ", sentence: "格闘ゲームで《必殺》技をきめる。", meaning: "必ず仕留めるような、最も強力な技や工夫。", stroke: 15 },
+      { kanji: "機関", read: "きかん", sentence: "公的な《機関》に問い合わせる。", meaning: "特定の機能、事業活動を行う公の組織・設備。", stroke: 21 },
+      { kanji: "公共", read: "こうきょう", sentence: "誰もが使う《公共》の施設を大切にする。", meaning: "社会の一般の人々、共同の公の福祉。", stroke: 14 },
+      { kanji: "例年", read: "れいねん", sentence: "今年の冬は《例年》になく暖かい。", meaning: "いつも通りの並の年。毎年の平均的な状態。", stroke: 14 },
+      { kanji: "要約", read: "ようやく", sentence: "長文のあらすじを《要約》して伝える。", meaning: "文章のポイントをかいつまんで短くまとめること。", stroke: 18 },
+      { kanji: "特産", read: "とくさん", sentence: "この地域の《特産》品であるみかんを味わう。", meaning: "特定の土地で特に優れて産出されるもの。", stroke: 21 },
+      { kanji: "単調", read: "たんちょう", sentence: "《単調》な作業が繰り返される。", meaning: "変化がなくて一本調子で退屈な様子。", stroke: 24 },
+      { kanji: "敗者", read: "はいしゃ", sentence: "《敗者》復活戦で奇跡の勝利を果たす。", meaning: "勝負に負けたほうの人、あるいはチーム。", stroke: 21 },
+      { kanji: "加熱", read: "かねつ", sentence: "十分に《加熱》してから食べてください。", meaning: "熱を加えて温度を上げること。", stroke: 20 },
+      { kanji: "満開", read: "まんかい", sentence: "桜の花が《満開》で見ごろを迎えた。", meaning: "花が咲き誇って満ちあふれていること。", stroke: 24 },
+      { kanji: "改札", read: "かいさつ", sentence: "切符を《改札》に通してホームへ急ぐ。", meaning: "駅で乗車券を確認し改めるゲート。", stroke: 12 },
+      { kanji: "最初", read: "さいしょ", sentence: "《最初》の約束通りに行動する。", meaning: "一番はじめ。スタート地点。", stroke: 19 },
+      { kanji: "大変", read: "たいへん", sentence: "片付けが《大変》な大仕事だった。", meaning: "並大抵でなく、苦労が伴い重大であること。", stroke: 18 },
+      { kanji: "低温", read: "ていおん", sentence: "冬は《低温》による水道管の凍結に注意する。", meaning: "低い温度。冷たい空気の状態。", stroke: 19 },
+      { kanji: "無線", read: "むせん", sentence: "《無線》のインターネットが快適だ。", meaning: "電波を用い、電線やケーブルをつながずに通信すること。", stroke: 27 },
+      { kanji: "商品", read: "しょうひん", sentence: "ずらりと並ぶ人気《商品》を手に取る。", meaning: "売買を目的として店頭に並ぶ品物。", stroke: 20 },
+      { kanji: "取材", read: "しゅざい", sentence: "新聞記者が現場に駆けつけて《取材》する。", meaning: "記事や作品の制作に必要なデータや情報を集める活動。", stroke: 12 }
+    ]
+  }
+};
+
+// ==========================================
+// ゲームの状態管理
+// ==========================================
+let config = {
+  playerMode: 'single',
+  gamePlayMode: 'battle',
+  testChallenger: 'a',
+  grade: 2,
+  kanjiLength: 'random',
+  format: 'both',
+  readInputType: 'choice',
+  maxHp: 20,
+  testCount: 10,
+};
+
+let gameState = {
+  pA: { name: "プレイヤーA", hp: 20, maxHp: 20, correctCount: 0, testAnswers: [] },
+  pB: { name: "プレイヤーB", hp: 20, maxHp: 20, correctCount: 0, testAnswers: [] },
+  activePlayer: 'a',
+  turn: 1,
+  drawnCard: null,
+  drawnType: '',
+  attackType: '',
+  currentQuiz: null,
+  hintUsed: 0,
+  maxHints: 3,
+  gameActive: false,
+  testQuestions: [] // テストモード用の一連の問題配列
+};
+
+// ==========================================
+// 画面の遷移 & コントロール
+// ==========================================
+window.onload = function() {
+  generateGradeButtons();
+  selectGrade(2);
+  selectKanjiLength('random');
+  selectFormat('both');
+  selectReadInputType('choice');
+  onHpSliderInput(20);
+  
+  document.addEventListener('touchstart', function(event) {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+};
+
+function generateGradeButtons() {
+  const container = document.getElementById("grade-row");
+  container.innerHTML = "";
+  for (let g = 2; g <= 6; g++) {
+    const btn = document.createElement("button");
+    btn.className = "g-btn";
+    btn.id = `grade-btn-${g}`;
+    btn.innerHTML = `${g}<ruby>年<rt>ねん</rt></ruby>`;
+    btn.onclick = () => selectGrade(g);
+    container.appendChild(btn);
+  }
+}
+
+function selectGrade(g) {
+  sounds.playSelect();
+  config.grade = g;
+  for (let i = 2; i <= 6; i++) {
+    const btn = document.getElementById(`grade-btn-${i}`);
+    if (btn) {
+      if (i === g) btn.classList.add("on");
+      else btn.classList.remove("on");
+    }
+  }
+}
+
+function selectPlayerMode(mode) {
+  sounds.playSelect();
+  config.playerMode = mode;
+  const btnSingle = document.getElementById("play-single");
+  const btnMulti = document.getElementById("play-multi");
+  const wrapB = document.getElementById("wrap-player-b");
+  const setupGrid = document.getElementById("setup-name-grid");
+
+  if (mode === 'single') {
+    btnSingle.classList.add("on");
+    btnMulti.classList.remove("on");
+    wrapB.style.display = "none";
+    setupGrid.classList.add("single-player");
+  } else {
+    btnSingle.classList.remove("on");
+    btnMulti.classList.add("on");
+    wrapB.style.display = "flex";
+    setupGrid.classList.remove("single-player");
+  }
+  updateUIForModeAndPlayMode();
+}
+
+function selectGamePlayMode(mode) {
+  sounds.playSelect();
+  config.gamePlayMode = mode;
+  const btnBattle = document.getElementById("gamemode-battle");
+  const btnTest = document.getElementById("gamemode-test");
+
+  if (mode === 'battle') {
+    btnBattle.classList.add("on");
+    btnTest.classList.remove("on");
+  } else {
+    btnBattle.classList.remove("on");
+    btnTest.classList.add("on");
+  }
+  updateUIForModeAndPlayMode();
+}
+
+function selectTestChallenger(challenger) {
+  sounds.playSelect();
+  config.testChallenger = challenger;
+  const btnA = document.getElementById("test-challenger-a");
+  const btnB = document.getElementById("test-challenger-b");
+  if (challenger === 'a') {
+    btnA.classList.add("on");
+    btnB.classList.remove("on");
+  } else {
+    btnA.classList.remove("on");
+    btnB.classList.add("on");
+  }
+}
+
+function selectKanjiLength(len) {
+  sounds.playSelect();
+  config.kanjiLength = len;
+  const btnSingle = document.getElementById("length-single");
+  const btnCompound = document.getElementById("length-compound");
+  const btnRandom = document.getElementById("length-random");
+
+  btnSingle.classList.remove("on");
+  btnCompound.classList.remove("on");
+  btnRandom.classList.remove("on");
+
+  if (len === 'single') btnSingle.classList.add("on");
+  else if (len === 'compound') btnCompound.classList.add("on");
+  else btnRandom.classList.add("on");
+}
+
+function selectFormat(format) {
+  sounds.playSelect();
+  config.format = format;
+  const btnBoth = document.getElementById("format-both");
+  const btnRead = document.getElementById("format-read");
+  const btnWrite = document.getElementById("format-write");
+
+  btnBoth.classList.remove("on");
+  btnRead.classList.remove("on");
+  btnWrite.classList.remove("on");
+
+  if (format === 'both') btnBoth.classList.add("on");
+  else if (format === 'read') btnRead.classList.add("on");
+  else btnWrite.classList.add("on");
+
+  updateUIForModeAndPlayMode();
+}
+
+function selectReadInputType(type) {
+  sounds.playSelect();
+  config.readInputType = type;
+  const btnChoice = document.getElementById("read-input-choice");
+  const btnText = document.getElementById("read-input-text");
+
+  if (type === 'choice') {
+    btnChoice.classList.add("on");
+    btnText.classList.remove("on");
+  } else {
+    btnChoice.classList.remove("on");
+    btnText.classList.add("on");
+  }
+}
+
+function updateUIForModeAndPlayMode() {
+  const isMulti = config.playerMode === 'multi';
+  const isTest = config.gamePlayMode === 'test';
+
+  const testSelector = document.getElementById("test-selector-section");
+  const labelInteractive = document.getElementById("setup-interactive-label");
+  const badgeHp = document.getElementById("hp-badge");
+  const rulePanel = document.getElementById("rule-desc-panel");
+  const lengthSection = document.getElementById("kanji-length-section");
+  const hpSection = document.getElementById("hp-interactive-section");
+
+  if (isMulti && isTest) {
+    testSelector.style.display = "block";
+  } else {
+    testSelector.style.display = "none";
+  }
+
+  if (isTest) {
+    // テストのときは漢字の長さと問題数選択エリアを非表示にする
+    lengthSection.style.display = "none";
+    hpSection.style.display = "none";
+
+    let testQCount = 20;
+    if (config.format === 'both') {
+      testQCount = 40;
+    }
+    config.testCount = testQCount;
+
+    rulePanel.innerHTML = `
+      📝 <b>実力確認漢字テスト！</b><br>
+      ⏰ PDF問題用紙の掲載順に沿って、順番通りに出題されます。<br>
+      📊 <b>総問題数: ${testQCount} 問</b> (${config.format === 'both' ? '読み①〜⑳ ＋ 書き①〜⑳' : '①〜⑳'})<br>
+      💡 テスト中の漢字の長さ、および出題数は自動的に固定されます。
+    `;
+  } else {
+    lengthSection.style.display = "block";
+    hpSection.style.display = "block";
+
+    labelInteractive.innerHTML = "HP · <ruby>初期体力<rt>しょきたいりょく</rt></ruby>";
+    badgeHp.innerHTML = "<ruby>標準対局<rt>ひょうじゅんたいきょく</rt></ruby>";
+    badgeHp.className = "hp-mode-badge standard";
+    const slider = document.getElementById("hp-slider");
+    slider.min = 10;
+    slider.max = 100;
+    slider.step = 10;
+    onHpSliderInput(slider.value);
+
+    rulePanel.innerHTML = `
+      🎴 <b>毎ターン１枚ドロー！クイズに挑戦！</b><br>
+      📖 <b>1文字の「読み」</b> → <span class="dmg-txt">-2 ダメージ</span><br>
+      ✏️ <b>1文字の「書き」</b> → <span class="dmg-txt">-4 ダメージ⚡ (自己判定)</span><br>
+      🔥 <b>二字熟語の「読み」</b> → <span class="dmg-txt">-4 ダメージ💥</span><br>
+      ⚡ <b>二字熟語の「書き」</b> → <span class="dmg-txt">-8 ダメージ超必殺技!💥</span>
+    `;
+  }
+}
+
+function onHpSliderInput(val) {
+  const isTest = config.gamePlayMode === 'test';
+  const display = document.getElementById("hp-display");
+  const marksContainer = document.getElementById("hp-marks-container");
+  marksContainer.innerHTML = "";
+
+  if (isTest) {
+    let testQCount = 20;
+    if (config.format === 'both') {
+      testQCount = 40;
+    }
+    config.testCount = testQCount;
+    display.textContent = `${config.testCount} 問`;
+  } else {
+    config.maxHp = parseInt(val);
+    display.textContent = `${val} HP`;
+
+    const options = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    marksContainer.className = "hp-marks";
+    options.forEach(opt => {
+      const item = document.createElement("div");
+      item.className = "hp-mark-item" + (opt === config.maxHp ? " active" : "");
+      item.textContent = opt;
+      marksContainer.appendChild(item);
+    });
+  }
+}
+
+function goSetupScreen() {
+  sounds.startBGM();
+  sounds.playSelect();
+  switchScreen('screen-setup');
+}
+
+function goTitleScreen() {
+  sounds.playSelect();
+  switchScreen('screen-title');
+}
+
+function switchScreen(screenId) {
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+// ==========================================
+// キャンバスお絵描きシステム (手書き入力)
+// ==========================================
+let canvas, ctx;
+let isDrawing = false;
+
+function initCanvas() {
+  canvas = document.getElementById("draw-canvas");
+  ctx = canvas.getContext("2d");
+  
+  ctx.strokeStyle = "#1e293b";
+  ctx.lineWidth = 10;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  canvas.addEventListener("mousedown", startDraw);
+  canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("mouseup", stopDraw);
+  canvas.addEventListener("mouseleave", stopDraw);
+
+  canvas.addEventListener("touchstart", startDrawTouch);
+  canvas.addEventListener("touchmove", drawTouch);
+  canvas.addEventListener("touchend", stopDraw);
+}
+
+function startDraw(e) {
+  isDrawing = true;
+  ctx.beginPath();
+  const rect = canvas.getBoundingClientRect();
+  ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+}
+
+function draw(e) {
+  if (!isDrawing) return;
+  const rect = canvas.getBoundingClientRect();
+  ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+  ctx.stroke();
+}
+
+function startDrawTouch(e) {
+  e.preventDefault();
+  isDrawing = true;
+  ctx.beginPath();
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+}
+
+function drawTouch(e) {
+  e.preventDefault();
+  if (!isDrawing) return;
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+  ctx.stroke();
+}
+
+function stopDraw() {
+  isDrawing = false;
+}
+
+function clearCanvas() {
+  sounds.playSelect();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ==========================================
+// 漢字の長さ識別用ヘルパー (平仮名・カタカナ等を除いた漢字のみの文字数)
+// ==========================================
+function getKanjiOnlyLength(str) {
+  const kanjiOnly = str.replace(/[\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEFa-zA-Z0-9]/g, "");
+  return kanjiOnly.length;
+}
+
+// ==========================================
+// ゲームエンジンコアロジック
+// ==========================================
+function startGame() {
+  sounds.playSelect();
+  
+  const nameA = document.getElementById("input-a").value.trim() || "プレイヤーA";
+  const nameB = document.getElementById("input-b").value.trim() || "プレイヤーB";
+  
+  gameState.pA = { name: nameA, hp: config.maxHp, maxHp: config.maxHp, correctCount: 0, testAnswers: [] };
+  gameState.pB = { name: nameB, hp: config.maxHp, maxHp: config.maxHp, correctCount: 0, testAnswers: [] };
+  
+  gameState.turn = 1;
+  gameState.hintUsed = 0;
+  gameState.gameActive = true;
+
+  // テストモード時はPDF掲載通りの順序で固定した問題配列をあらかじめ作成する
+  if (config.gamePlayMode === 'test') {
+    const gradeData = KANJI_DB[config.grade];
+    let questions = [];
+
+    if (config.format === 'read') {
+      // 読み 20問
+      questions = gradeData.read.map(q => {
+        let item = JSON.parse(JSON.stringify(q));
+        item.category = 'read';
+        return item;
+      });
+      config.testCount = 20;
+    } else if (config.format === 'write') {
+      // 書き 20問
+      questions = gradeData.write.map(q => {
+        let item = JSON.parse(JSON.stringify(q));
+        item.category = 'write';
+        return item;
+      });
+      config.testCount = 20;
+    } else {
+      // 読み・書き 40問 (読み①〜⑳ のあとに 書き①〜⑳)
+      const reads = gradeData.read.map(q => {
+        let item = JSON.parse(JSON.stringify(q));
+        item.category = 'read';
+        return item;
+      });
+      const writes = gradeData.write.map(q => {
+        let item = JSON.parse(JSON.stringify(q));
+        item.category = 'write';
+        return item;
+      });
+      questions = [...reads, ...writes];
+      config.testCount = 40;
+    }
+
+    gameState.testQuestions = questions;
+  }
+  
+  switchScreen('screen-game');
+  document.getElementById("screen-game").classList.remove("danger-flash");
+  
+  setupGameLayout();
+  initCanvas();
+  startNewTurn();
+}
+
+function setupGameLayout() {
+  const hpRow = document.getElementById("game-hp-row");
+
+  if (config.gamePlayMode === 'test') {
+    hpRow.style.display = "none";
+    document.getElementById("game-vs-text").style.display = "none";
+    
+    if (config.playerMode === 'single') {
+      gameState.activePlayer = 'a';
+    } else {
+      gameState.activePlayer = config.testChallenger;
+    }
+  } else {
+    hpRow.style.display = "grid";
+    document.getElementById("game-vs-text").style.display = "block";
+    
+    if (config.playerMode === 'single') {
+      hpRow.classList.add("single-player");
+      document.getElementById("p-card-b").style.display = "none";
+      document.getElementById("game-vs-text").style.display = "none";
+      gameState.pB.name = "漢字魔王 (CPU)";
+      gameState.pB.hp = config.maxHp;
+      gameState.pB.maxHp = config.maxHp;
+    } else {
+      hpRow.classList.remove("single-player");
+      document.getElementById("p-card-b").style.display = "block";
+    }
+    
+    gameState.activePlayer = 'a';
+  }
+
+  updateStatusUI();
+}
+
+function updateStatusUI() {
+  const activePObj = gameState.activePlayer === 'a' ? gameState.pA : gameState.pB;
+  const turnPill = document.getElementById("active-turn-pill");
+  
+  if (config.gamePlayMode === 'test') {
+    turnPill.textContent = `${activePObj.name} (実力テスト中)`;
+    turnPill.className = `turn-pill ${gameState.activePlayer}`;
+    document.getElementById("turn-display-count").textContent = `問題: ${gameState.turn} / ${config.testCount}`;
+  } else {
+    turnPill.textContent = `${activePObj.name} のターン`;
+    turnPill.className = `turn-pill ${gameState.activePlayer}`;
+    document.getElementById("turn-display-count").textContent = `ターン ${gameState.turn}`;
+  }
+
+  if (config.gamePlayMode === 'battle') {
+    document.getElementById("p-name-a").textContent = gameState.pA.name;
+    document.getElementById("p-hp-a").textContent = `${gameState.pA.hp} / ${gameState.pA.maxHp}`;
+    const pctA = Math.max(0, (gameState.pA.hp / gameState.pA.maxHp) * 100);
+    const barA = document.getElementById("p-bar-a");
+    barA.style.width = `${pctA}%`;
+    if (pctA <= 25) {
+      document.getElementById("p-card-a").classList.add("danger");
+      barA.style.background = "var(--red)";
+    } else {
+      document.getElementById("p-card-a").classList.remove("danger");
+      barA.style.background = "var(--blue)";
+    }
+
+    if (config.playerMode === 'multi') {
+      document.getElementById("p-name-b").textContent = gameState.pB.name;
+      document.getElementById("p-hp-b").textContent = `${gameState.pB.hp} / ${gameState.pB.maxHp}`;
+      const pctB = Math.max(0, (gameState.pB.hp / gameState.pB.maxHp) * 100);
+      const barB = document.getElementById("p-bar-b");
+      barB.style.width = `${pctB}%`;
+      if (pctB <= 25) {
+        document.getElementById("p-card-b").classList.add("danger");
+        barB.style.background = "var(--red)";
+      } else {
+        document.getElementById("p-card-b").classList.remove("danger");
+        barB.style.background = "var(--pink)";
+      }
+    } else {
+      document.getElementById("p-card-b").style.display = "block";
+      document.getElementById("p-name-b").textContent = "漢字魔王 (CPU)";
+      document.getElementById("p-hp-b").textContent = `${gameState.pB.hp} / ${gameState.pB.maxHp}`;
+      const pctB = Math.max(0, (gameState.pB.hp / gameState.pB.maxHp) * 100);
+      const barB = document.getElementById("p-bar-b");
+      barB.style.width = `${pctB}%`;
+      if (pctB <= 25) {
+        document.getElementById("p-card-b").classList.add("danger");
+        barB.style.background = "var(--red)";
+      } else {
+        document.getElementById("p-card-b").classList.remove("danger");
+        barB.style.background = "var(--gold)";
+      }
+    }
+  }
+}
+
+function startNewTurn() {
+  sounds.playDraw();
+  
+  document.getElementById("phase-draw").style.display = "flex";
+  document.getElementById("phase-type-select").style.display = "none";
+  document.getElementById("phase-quiz-read").style.display = "none";
+  document.getElementById("phase-quiz-write").style.display = "none";
+  document.getElementById("phase-self-verdict").style.display = "none";
+  document.getElementById("phase-turn-end").style.display = "none";
+  
+  const deck = document.getElementById("game-deck-card");
+  deck.classList.remove("flipped");
+  
+  document.getElementById("arena-stage-title").textContent = config.gamePlayMode === 'test' ? "KNOWLEDGE TEST" : "BATTLE ARENA";
+  
+  const drawTxt = document.getElementById("draw-instruction-text");
+  const pName = gameState.activePlayer === 'a' ? gameState.pA.name : gameState.pB.name;
+  
+  if (config.gamePlayMode === 'test') {
+    drawTxt.innerHTML = `${pName}さん、カードをめくって第 ${gameState.turn} 問に挑戦しましょう！`;
+  } else {
+    drawTxt.innerHTML = `${pName}さんの番です。デッキをタップしてドローしてください！`;
+  }
+}
+
+function performDraw() {
+  sounds.playSelect();
+  const deck = document.getElementById("game-deck-card");
+  deck.classList.add("flipped");
+
+  selectRandomQuiz();
+
+  setTimeout(() => {
+    transitionFromDraw();
+  }, 1000);
+}
+
+function selectRandomQuiz() {
+  if (config.gamePlayMode === 'test') {
+    // 実力テスト時は事前構築した順番（配列インデックス）から固定で取り出す
+    const idx = gameState.turn - 1;
+    if (idx < gameState.testQuestions.length) {
+      gameState.currentQuiz = JSON.parse(JSON.stringify(gameState.testQuestions[idx]));
+      
+      const kLen = getKanjiOnlyLength(gameState.currentQuiz.kanji);
+      gameState.drawnType = kLen === 1 ? 'single' : 'compound';
+      
+      let lbl = "";
+      if (gameState.currentQuiz.category === 'read') {
+        lbl = kLen === 1 ? "一字の読み" : "二字熟語の読み";
+      } else {
+        lbl = kLen === 1 ? "一字の書き取り" : "二字熟語の書き取り";
+      }
+      document.getElementById("drawn-card-title").textContent = `Q${gameState.turn}: ${lbl}`;
+    }
+    return;
+  }
+
+  // バトルモードの場合は通常のランダムフィルタ選定を行う
+  const gradeData = KANJI_DB[config.grade];
+  
+  let formatType = '';
+  if (config.format === 'read') {
+    formatType = 'read';
+  } else if (config.format === 'write') {
+    formatType = 'write';
+  } else {
+    formatType = 'both';
+  }
+
+  const filterQuestions = (qList) => {
+    if (config.kanjiLength === 'single') {
+      return qList.filter(q => getKanjiOnlyLength(q.kanji) === 1);
+    } else if (config.kanjiLength === 'compound') {
+      return qList.filter(q => getKanjiOnlyLength(q.kanji) >= 2);
+    }
+    return qList;
+  };
+
+  if (formatType === 'both') {
+    const readPool = filterQuestions(gradeData.read);
+    const writePool = filterQuestions(gradeData.write);
+
+    const finalReadPool = readPool.length > 0 ? readPool : gradeData.read;
+    const finalWritePool = writePool.length > 0 ? writePool : gradeData.write;
+
+    const readItem = finalReadPool[Math.floor(Math.random() * finalReadPool.length)];
+    const writeItem = finalWritePool[Math.floor(Math.random() * finalWritePool.length)];
+
+    gameState.drawnType = getKanjiOnlyLength(readItem.kanji) === 1 ? 'single' : 'compound';
+    gameState.drawnCard = {
+      readObj: readItem,
+      writeObj: writeItem
+    };
+    document.getElementById("drawn-card-title").textContent = gameState.drawnType === 'single' ? "一字漢字カード" : "二字熟語カード";
+  } else {
+    const pool = filterQuestions(gradeData[formatType]);
+    const finalPool = pool.length > 0 ? pool : gradeData[formatType];
+    const item = finalPool[Math.floor(Math.random() * finalPool.length)];
+    
+    gameState.currentQuiz = JSON.parse(JSON.stringify(item));
+    gameState.currentQuiz.category = formatType;
+    
+    const kLen = getKanjiOnlyLength(item.kanji);
+    gameState.drawnType = kLen === 1 ? 'single' : 'compound';
+    
+    let lbl = "";
+    if (formatType === 'read') {
+      lbl = kLen === 1 ? "一字の読み" : "二字熟語の読み";
+    } else {
+      lbl = kLen === 1 ? "一字の書き取り" : "二字熟語の書き取り";
+    }
+    document.getElementById("drawn-card-title").textContent = lbl;
+  }
+}
+
+function transitionFromDraw() {
+  document.getElementById("phase-draw").style.display = "none";
+  
+  if (config.gamePlayMode === 'test') {
+    startQuizDirect();
+  } else {
+    if (config.format === 'both') {
+      showAttackTypeSelection();
+    } else {
+      if (config.format === 'read') {
+        startQuizRead();
+      } else {
+        startQuizWrite();
+      }
+    }
+  }
+}
+
+function showAttackTypeSelection() {
+  document.getElementById("phase-type-select").style.display = "flex";
+  
+  const cardBadge = document.getElementById("card-drawn-badge");
+  const sentencePanel = document.getElementById("drawn-hint-sentence");
+  const dmgRead = document.getElementById("dmg-lbl-read");
+  const dmgWrite = document.getElementById("dmg-lbl-write");
+  
+  sentencePanel.style.display = "none";
+  
+  if (gameState.drawnType === 'single') {
+    cardBadge.textContent = "一字漢字カードドロー！";
+    cardBadge.style.background = "linear-gradient(90deg, var(--blue), var(--green))";
+    dmgRead.textContent = "ダメージ -2";
+    dmgWrite.textContent = "ダメージ -4 ⚡";
+  } else {
+    cardBadge.textContent = "二字熟語カードドロー！";
+    cardBadge.style.background = "linear-gradient(90deg, var(--gold-dark), var(--pink2))";
+    dmgRead.textContent = "ダメージ -4 💥";
+    dmgWrite.textContent = "ダメージ -8 ⚡💥";
+  }
+}
+
+function chooseAttackType(type) {
+  sounds.playSelect();
+  gameState.attackType = type;
+  document.getElementById("phase-type-select").style.display = "none";
+  
+  if (type === 'read') {
+    const orig = gameState.drawnCard.readObj;
+    gameState.currentQuiz = JSON.parse(JSON.stringify(orig));
+    gameState.currentQuiz.category = 'read';
+    startQuizRead();
+  } else {
+    const orig = gameState.drawnCard.writeObj;
+    gameState.currentQuiz = JSON.parse(JSON.stringify(orig));
+    gameState.currentQuiz.category = 'write';
+    startQuizWrite();
+  }
+}
+
+function startQuizDirect() {
+  const cat = gameState.currentQuiz.category;
+  if (cat === 'read') {
+    startQuizRead();
+  } else {
+    startQuizWrite();
+  }
+}
+
+// ==========================================
+// 読みクイズ (4択 または 文字入力)
+// ==========================================
+function startQuizRead() {
+  document.getElementById("phase-quiz-read").style.display = "flex";
+  
+  const qObj = gameState.currentQuiz;
+  document.getElementById("read-quiz-kanji").textContent = qObj.kanji;
+  document.getElementById("read-quiz-sentence").innerHTML = qObj.sentence.replace(`《${qObj.kanji}》`, `<span class="q-word">${qObj.kanji}</span>`);
+
+  const optContainer = document.getElementById("read-options-container");
+  const textContainer = document.getElementById("read-text-input-container");
+  const promptText = document.getElementById("read-quiz-prompt-text");
+
+  if (config.readInputType === 'choice') {
+    optContainer.style.display = "grid";
+    textContainer.style.display = "none";
+    promptText.textContent = "次の漢字の正しい「読み」はどれ？";
+
+    const correctRead = qObj.read;
+    const dummyAnswers = generateDummyReadAnswers(correctRead);
+    const options = [correctRead, ...dummyAnswers].sort(() => Math.random() - 0.5);
+    
+    optContainer.innerHTML = "";
+    options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "read-opt";
+      btn.textContent = opt;
+      btn.onclick = () => selectReadOption(btn, opt === correctRead);
+      optContainer.appendChild(btn);
+    });
+  } else {
+    optContainer.style.display = "none";
+    textContainer.style.display = "flex";
+    promptText.textContent = "この漢字の「読み」をひらがなで入力してね！";
+
+    const inputEl = document.getElementById("read-keyboard-input-element");
+    inputEl.value = "";
+    setTimeout(() => inputEl.focus(), 100);
+
+    inputEl.onkeydown = function(e) {
+      if (e.key === 'Enter') {
+        submitReadTextAnswer();
+      }
+    };
+  }
+}
+
+function generateDummyReadAnswers(correct) {
+  const dummies = new Set();
+  const defaultDummies = ["き", "み", "はな", "みず", "おと", "やま", "かわ", "て", "つき"];
+  
+  const pool = KANJI_DB[config.grade].read;
+  pool.forEach(item => {
+    if (item.read !== correct) {
+      dummies.add(item.read);
+    }
+  });
+
+  while (dummies.size < 3) {
+    const randomDummy = defaultDummies[Math.floor(Math.random() * defaultDummies.length)] + (dummies.size + 1);
+    dummies.add(randomDummy);
+  }
+
+  return Array.from(dummies).slice(0, 3);
+}
+
+function selectReadOption(selectedBtn, isCorrect) {
+  const btns = document.querySelectorAll(".read-opt");
+  btns.forEach(b => b.disabled = true);
+
+  if (isCorrect) {
+    sounds.playCorrect();
+    selectedBtn.classList.add("ok");
+    showTurnResult(true, "正解！ クリティカルヒット！");
+  } else {
+    sounds.playIncorrect();
+    selectedBtn.classList.add("ng");
+    btns.forEach(b => {
+      if (b.textContent === gameState.currentQuiz.read) {
+        b.classList.add("ok");
+      }
+    });
+    showTurnResult(false, "残念！読みまちがい！");
+  }
+}
+
+function toHiragana(str) {
+  return str.replace(/[\u30a1-\u30f6]/g, function(match) {
+    const chr = match.charCodeAt(0) - 0x60;
+    return String.fromCharCode(chr);
+  });
+}
+
+function submitReadTextAnswer() {
+  const inputEl = document.getElementById("read-keyboard-input-element");
+  const userAns = toHiragana(inputEl.value.trim().toLowerCase());
+  const correctAns = toHiragana(gameState.currentQuiz.read.trim().toLowerCase());
+
+  if (userAns === "") {
+    return;
+  }
+
+  if (userAns === correctAns) {
+    sounds.playCorrect();
+    showTurnResult(true, "正解！ クリティカルヒット！");
+  } else {
+    sounds.playIncorrect();
+    showTurnResult(false, `残念！正解は「${gameState.currentQuiz.read}」でした。`);
+  }
+}
+
+// ==========================================
+// 書きクイズ (手書き)
+// ==========================================
+function startQuizWrite() {
+  document.getElementById("phase-quiz-write").style.display = "flex";
+  
+  const qObj = gameState.currentQuiz;
+  document.getElementById("write-target-kana").textContent = qObj.read;
+  
+  const kanaHl = qObj.sentence.replace(`《${qObj.kanji}》`, `<span class="q-word">${qObj.read}</span>`);
+  document.getElementById("write-quiz-sentence").innerHTML = kanaHl;
+  
+  gameState.hintUsed = 0;
+  document.getElementById("hint-count-display").textContent = gameState.maxHints;
+  document.getElementById("hint-display-box").style.display = "none";
+  document.getElementById("btn-hint-meaning").disabled = false;
+  document.getElementById("btn-hint-stroke").disabled = false;
+
+  clearCanvas();
+}
+
+function useHint(type) {
+  sounds.playSelect();
+  if (gameState.hintUsed >= gameState.maxHints) return;
+
+  gameState.hintUsed++;
+  document.getElementById("hint-count-display").textContent = gameState.maxHints - gameState.hintUsed;
+
+  const hintBox = document.getElementById("hint-display-box");
+  const hintTitle = document.getElementById("hint-box-title");
+  const hintText = document.getElementById("hint-box-text");
+  
+  hintBox.style.display = "block";
+  const q = gameState.currentQuiz;
+
+  if (type === 'meaning') {
+    hintTitle.textContent = "意味ヒント";
+    hintText.innerHTML = `漢字の意味: <br>${q.meaning || "特別な言葉の表現。"}`;
+    document.getElementById("btn-hint-meaning").disabled = true;
+  } else {
+    hintTitle.textContent = "画数・ヒント";
+    hintText.innerHTML = `「${q.kanji}」の総画数: <br><span class="reading-big">${q.stroke || "?"} 画</span>`;
+    document.getElementById("btn-hint-stroke").disabled = true;
+  }
+}
+
+function submitCanvas() {
+  sounds.playSelect();
+  document.getElementById("phase-quiz-write").style.display = "none";
+  showSelfVerdictScreen();
+}
+
+function showSelfVerdictScreen() {
+  document.getElementById("phase-self-verdict").style.display = "flex";
+  
+  const q = gameState.currentQuiz;
+  document.getElementById("correct-kanji-big").textContent = q.kanji;
+  document.getElementById("correct-kanji-kana").textContent = `正しい書き方: 「${q.kanji}」（よみ：${q.read}）`;
+  document.getElementById("correct-kanji-meaning").textContent = q.meaning || "特にありません。";
+}
+
+function manualVerdict(isSuccess) {
+  document.getElementById("phase-self-verdict").style.display = "none";
+  
+  if (isSuccess) {
+    sounds.playCorrect();
+    showTurnResult(true, "判定：合格！ 素晴らしい筆跡です！");
+  } else {
+    sounds.playIncorrect();
+    showTurnResult(false, "判定：不合格。もう一度練習しましょう！");
+  }
+}
+
+// ==========================================
+// ターン終了＆ダメージ判定
+// ==========================================
+function showTurnResult(success, message) {
+  document.getElementById("phase-quiz-read").style.display = "none";
+  document.getElementById("phase-turn-end").style.display = "flex";
+
+  const msgBox = document.getElementById("end-message-box");
+  const learnBox = document.getElementById("end-learn-box");
+  const q = gameState.currentQuiz;
+  
+  recordQuizResult(success);
+
+  let damage = 0;
+  if (config.gamePlayMode === 'battle') {
+    const isSingle = getKanjiOnlyLength(q.kanji) === 1;
+    if (q.category === 'read') {
+      damage = isSingle ? 2 : 4;
+    } else {
+      damage = isSingle ? 4 : 8;
+    }
+  }
+
+  if (success) {
+    msgBox.className = "end-msg hit";
+    if (config.gamePlayMode === 'battle') {
+      const defender = gameState.activePlayer === 'a' ? gameState.pB : gameState.pA;
+      defender.hp = Math.max(0, defender.hp - damage);
+      
+      msgBox.innerHTML = `💥 攻撃成功！<br>${defender.name}に <span class="dmg-txt">${damage} ダメージ</span>！`;
+      triggerDamageEffect(damage);
+    } else {
+      msgBox.innerHTML = `✨ 正解です！`;
+    }
+  } else {
+    msgBox.className = "end-msg miss";
+    if (config.gamePlayMode === 'battle') {
+      const attacker = gameState.activePlayer === 'a' ? gameState.pA : gameState.pB;
+      attacker.hp = Math.max(0, attacker.hp - 1);
+      msgBox.innerHTML = `🛡️ 攻撃失敗！<br>反動で ${attacker.name}は <span class="dmg-txt">1 ダメージ</span> を受けた！`;
+      triggerDamageEffect(1, true);
+    } else {
+      msgBox.innerHTML = `😢 不正解！`;
+    }
+  }
+
+  learnBox.innerHTML = `
+    出題漢字: <span class="hl">${q.kanji}</span> (よみ: ${q.read})<br>
+    【意味】${q.meaning || "例文に合わせた言葉"}<br>
+    【文例】${q.sentence.replace(`《${q.kanji}》`, `<b>「${q.kanji}」</b>`)}
+  `;
+
+  updateStatusUI();
+}
+
+function recordQuizResult(success) {
+  const pObj = gameState.activePlayer === 'a' ? gameState.pA : gameState.pB;
+  
+  if (success) {
+    pObj.correctCount++;
+  }
+
+  pObj.testAnswers.push({
+    kanji: gameState.currentQuiz.kanji,
+    read: gameState.currentQuiz.read,
+    isCorrect: success,
+    category: gameState.currentQuiz.category
+  });
+}
+
+function triggerDamageEffect(dmg, isAttackerDamage = false) {
+  sounds.playDamage();
+  
+  const pop = document.createElement("div");
+  pop.className = "dmg-popup";
+  pop.textContent = `-${dmg}`;
+  
+  pop.style.color = isAttackerDamage ? "var(--muted)" : "var(--red)";
+  document.body.appendChild(pop);
+  
+  const screen = document.getElementById("screen-game");
+  screen.classList.add("shake-screen");
+  screen.classList.add("danger-flash");
+
+  setTimeout(() => {
+    pop.remove();
+    screen.classList.remove("shake-screen");
+    screen.classList.remove("danger-flash");
+  }, 900);
+}
+
+function proceedToNextTurn() {
+  sounds.playSelect();
+
+  if (checkGameOverCondition()) {
+    endGame();
+    return;
+  }
+
+  gameState.turn++;
+
+  if (config.gamePlayMode === 'battle') {
+    if (config.playerMode === 'multi') {
+      gameState.activePlayer = gameState.activePlayer === 'a' ? 'b' : 'a';
+    }
+  }
+
+  updateStatusUI();
+  startNewTurn();
+}
+
+function checkGameOverCondition() {
+  if (config.gamePlayMode === 'test') {
+    return gameState.turn >= config.testCount;
+  } else {
+    return gameState.pA.hp <= 0 || gameState.pB.hp <= 0;
+  }
+}
+
+// ==========================================
+// ゲーム終了 & リザルト画面
+// ==========================================
+function endGame() {
+  gameState.gameActive = false;
+  sounds.stopBGM();
+  sounds.playVictory();
+  
+  switchScreen('screen-result');
+
+  const winTitle = document.getElementById("res-winner-title");
+  const infoBox = document.getElementById("res-info-box");
+  const summaryContainer = document.getElementById("test-summary-container");
+
+  if (config.gamePlayMode === 'test') {
+    summaryContainer.style.display = "block";
+    const challengerObj = gameState.activePlayer === 'a' ? gameState.pA : gameState.pB;
+    
+    winTitle.textContent = "実力テスト 終了！";
+    const accuracy = Math.round((challengerObj.correctCount / config.testCount) * 100);
+    
+    let rank = "がんばった！";
+    if (accuracy === 100) rank = "極・漢字十段 (カンペキ！)";
+    else if (accuracy >= 80) rank = "漢字名人 (優秀！)";
+    else if (accuracy >= 60) rank = "漢字一級 (合格！)";
+
+    infoBox.innerHTML = `
+      挑戦者: <b>${challengerObj.name}</b><br>
+      出題数: ${config.testCount} 問 中 <span class="dmg-txt">${challengerObj.correctCount} 問 正解</span><br>
+      正答率: <span class="hl">${accuracy}%</span><br>
+      称号：<b>${rank}</b>
+    `;
+
+    generateTestSummaryGrid(challengerObj);
+
+  } else {
+    summaryContainer.style.display = "none";
+    let winnerName = "";
+    
+    if (gameState.pA.hp <= 0 && gameState.pB.hp <= 0) {
+      winTitle.textContent = "引き分け！";
+      infoBox.innerHTML = `両者、相打ちとなりました！実力は伯仲！<br>総ターン数: ${gameState.turn} ターン`;
+    } else {
+      if (gameState.pA.hp <= 0) {
+        winnerName = gameState.pB.name;
+      } else {
+        winnerName = gameState.pA.name;
+      }
+      
+      winTitle.textContent = `${winnerName} の勝利！`;
+      infoBox.innerHTML = `
+        総ターン数: ${gameState.turn} ターン<br>
+        👑 覇者：<b>${winnerName}</b><br><br>
+        【各プレイヤーの正解率】<br>
+        ${gameState.pA.name}: ${gameState.pA.correctCount}問正解<br>
+        ${config.playerMode === 'multi' ? `${gameState.pB.name}: ${gameState.pB.correctCount}問正解` : ''}
+      `;
+    }
+  }
+}
+
+function generateTestSummaryGrid(challengerObj) {
+  const grid = document.getElementById("test-summary-grid");
+  grid.innerHTML = "";
+  
+  challengerObj.testAnswers.forEach((ans, idx) => {
+    const item = document.createElement("div");
+    item.className = "test-summary-item " + (ans.isCorrect ? "ok" : "ng");
+    item.innerHTML = `
+      Q${idx+1}<br>
+      <span style="font-size: 14px;">${ans.kanji}</span><br>
+      ${ans.isCorrect ? '◯' : '✗'}
+    `;
+    grid.appendChild(item);
+  });
+}
+
+function quitGamePrompt() {
+  sounds.playSelect();
+  if (confirm("現在のゲームを終了して、設定に戻りますか？")) {
+    sounds.stopBGM();
+    switchScreen('screen-setup');
+  }
+}
+
+function restartSameGame() {
+  sounds.playSelect();
+  sounds.startBGM();
+  startGame();
+}
+</script>
+</body>
+</html>
